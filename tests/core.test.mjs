@@ -181,6 +181,23 @@ test('currentBlock picks the latest row on/before today', () => {
   assert.equal(C.currentBlock(st, '2026-06-18'), null);
 });
 
+test('recentBlockChange: row within 5 days, null when older or empty', () => {
+  const st = C.defaultState();
+  assert.equal(C.recentBlockChange(st, '2026-06-28'), null);
+  st.blockSchedule = [{ date: '2026-06-19', deg: 30 }, { date: '2026-06-26', deg: 20 }];
+  assert.equal(C.recentBlockChange(st, '2026-06-28').deg, 20); // 2 days after opening
+  assert.equal(C.recentBlockChange(st, '2026-07-02'), null);   // 6 days after: window passed
+});
+test('block openings do NOT reset the trend (deliberate — see holdOn comment)', () => {
+  const st = C.defaultState();
+  st.castOffDate = '2026-06-19';
+  st.blockSchedule = [{ date: '2026-06-19', deg: 30 }, { date: '2026-06-26', deg: 20 }];
+  // sustained stiffness climb spanning the 26 Jun block row
+  for (let i = 0; i < 12; i++) st.metrics.push({ date: C.addDays('2026-06-19', i), pain: 1, stiffness: Math.min(8, 2 + i * 0.7) });
+  const reasons = [...C.holdOn(st, '2026-06-30')];
+  assert.ok(reasons.includes('stiffness trend'), 'trend spanning a block date still holds: ' + reasons);
+});
+
 // ---- protocol integrity ----
 test('every item/criterion/milestone id is unique', () => {
   for (const key of ['items', 'criteria', 'milestones']) {

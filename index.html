@@ -333,6 +333,9 @@ function holdOn(state, dayKey) {
   if (s && s.settled === false) reasons.push('settle');
   // Cast-off is a regime change: post-cast soreness is expected, not regression.
   // Trend comparisons therefore never span the boundary — the EMA restarts there.
+  // Brace block openings deliberately do NOT reset the trend: same regime, and
+  // weekly resets would disarm the HO stiffness screen in its highest-risk weeks.
+  // A bump-triggered Hold gives sound advice anyway; the banner explains it instead.
   const trendMetrics = state.castOffDate
     ? state.metrics.filter(mt => mt.date >= state.castOffDate)
     : state.metrics;
@@ -429,6 +432,11 @@ function currentBlock(state, dayKey) {
   for (const r of rows) { if (r.date <= dayKey) v = r; }
   return v;
 }
+function recentBlockChange(state, dayKey, withinDays) {
+  const w = withinDays == null ? 5 : withinDays;
+  const cur = currentBlock(state, dayKey);
+  return cur && cur.date >= addDays(dayKey, -w) ? cur : null;
+}
 
 /* ---- export shape ---- */
 function exportPayload(state, exportedAt) {
@@ -443,7 +451,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = { PROTOCOL, defaultState, todayKey, addDays, dayOfWeek, weekKeyOf, emaSeries, emaAt,
     trendRising, holdOn, holdInfo, effectiveCriteria, critTicked, currentPhase, itemRetired, activeItems,
     tickFor, weekCount, everTicked, currentDose, hadLoadingTick, streak, flagBannerActive,
-    redFlagDueThisWeek, currentBlock, exportPayload, validImport, metricsFor, settleFor };
+    redFlagDueThisWeek, currentBlock, recentBlockChange, exportPayload, validImport, metricsFor, settleFor };
 }
 </script>
 
@@ -547,8 +555,11 @@ function renderToday() {
   h += backfillCards(day);
 
   if (hold.hold && m) {
+    const isTrend = hold.reasons.some(r => r.includes('trend'));
+    const blkChange = !state.braceRetired && isTrend ? recentBlockChange(state, day) : null;
     h += `<div class="banner hold"><b>⏸ Hold — repeat the same load, don't progress.</b><br>
       Reason: ${hold.reasons.join(' + ')}. Ticking at the current dose stays on.${
+      blkChange ? `<br>The brace block opened to ${blkChange.deg}° on ${fmtDate(blkChange.date)} — a short-lived bump after gaining new range is normal. The Hold clears when the trend settles.` : ''}${
       hold.consecutive >= HOLD_STEPBACK_DAYS ? `<br><b class="amber">${hold.consecutive} days on hold — consider stepping back a phase. Talk to your physio.</b>` : ''}</div>`;
   }
   if (!m) h += `<div class="banner info">Day unassessed — answer the morning prompt to enable Progress. Ticking is open.</div>`;
