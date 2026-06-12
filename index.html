@@ -106,6 +106,25 @@
   details summary { cursor: pointer; color: var(--dim); font-size: .8rem; padding: 4px 0; }
   ul.notes { font-size: .78rem; color: var(--dim); line-height: 1.5; padding-left: 18px; margin-top: 6px; }
   .secthead { font-size: .8rem; color: var(--dim); margin: 16px 4px 6px; text-transform: uppercase; letter-spacing: .06em; }
+  .journey { padding: 10px 14px 8px; cursor: pointer; }
+  .journey .track { display: flex; align-items: center; gap: 0; }
+  .journey .end { font-size: 1.05rem; line-height: 1; }
+  .journey .segwrap { display: flex; align-items: center; flex-grow: 1; min-width: 0; }
+  .journey .seg {
+    flex-grow: 1; height: 12px; background: var(--card2);
+    border: 1px solid var(--line); border-radius: 7px; overflow: hidden; margin: 0 1px;
+  }
+  .journey .seg.cur { border-color: var(--accent); box-shadow: 0 0 6px rgba(79,163,255,.35); }
+  .journey .seg .fill {
+    height: 100%; width: 0; border-radius: 6px;
+    background: linear-gradient(90deg, var(--good), var(--accent));
+    transition: width .6s ease;
+  }
+  .journey .gate { font-size: .8rem; line-height: 1; margin: 0 1px; z-index: 1; }
+  .journey .gate.dim { font-size: .5rem; color: var(--line); }
+  .journey .labels { display: flex; margin-top: 4px; padding: 0 14px; }
+  .journey .labels span { flex-grow: 1; text-align: center; font-size: .65rem; color: var(--dim); }
+  .journey .labels span.cur { color: var(--accent); font-weight: 700; }
   .amber { color: var(--warn); }
 </style>
 </head>
@@ -438,6 +457,25 @@ function recentBlockChange(state, dayKey, withinDays) {
   return cur && cur.date >= addDays(dayKey, -w) ? cur : null;
 }
 
+/* ---- journey progress (fill is criteria/milestone-driven, never date-driven) ---- */
+const JOURNEY_WEIGHTS = [2, 2, 2, 4, 4]; // guide weeks per phase: widths only, not fill
+function journeyProgress(state) {
+  const cur = currentPhase(state);
+  const segments = [0, 0, 0, 0, 0];
+  for (let p = 0; p < cur; p++) segments[p] = 1;
+  if (cur === 0) {
+    const clinic = ['p0-clinic-brace', 'p0-clinic-block', 'p0-clinic-stability'];
+    segments[0] = clinic.filter(id => everTicked(state, id)).length / clinic.length;
+  } else if (cur < 4) {
+    const crits = effectiveCriteria(state, cur + 1);
+    segments[cur] = crits.length ? crits.filter(c => critTicked(state, c.id)).length / crits.length : 0;
+  } else {
+    const m = id => state.milestones.some(x => x.id === id) ? 0.5 : 0;
+    segments[4] = m('m-wall') + m('m-grade');
+  }
+  return { segments, weights: JOURNEY_WEIGHTS, current: cur };
+}
+
 /* ---- export shape ---- */
 function exportPayload(state, exportedAt) {
   return { app: 'elbow-recovery', schemaVersion: state.schemaVersion, protocolVersion: PROTOCOL.version, exportedAt, state };
@@ -451,7 +489,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = { PROTOCOL, defaultState, todayKey, addDays, dayOfWeek, weekKeyOf, emaSeries, emaAt,
     trendRising, holdOn, holdInfo, effectiveCriteria, critTicked, currentPhase, itemRetired, activeItems,
     tickFor, weekCount, everTicked, currentDose, hadLoadingTick, streak, flagBannerActive,
-    redFlagDueThisWeek, currentBlock, recentBlockChange, exportPayload, validImport, metricsFor, settleFor };
+    redFlagDueThisWeek, currentBlock, recentBlockChange, journeyProgress, exportPayload, validImport, metricsFor, settleFor };
 }
 </script>
 
@@ -538,12 +576,31 @@ document.getElementById('tabs').addEventListener('click', e => {
 });
 
 /* ---------- TODAY ---------- */
+function journeyBar() {
+  const jp = journeyProgress(state);
+  let segs = '';
+  for (let p = 0; p <= 4; p++) {
+    if (p > 0) {
+      const gate = fired('m-phase' + p);
+      const def = PROTOCOL.milestones.find(x => x.id === 'm-phase' + p);
+      segs += gate ? `<span class="gate">${def.emoji}</span>` : `<span class="gate dim">●</span>`;
+    }
+    segs += `<div class="seg ${p === jp.current ? 'cur' : ''}" style="flex-grow:${jp.weights[p]}">
+      <div class="fill" style="width:${(jp.segments[p] * 100).toFixed(0)}%"></div></div>`;
+  }
+  const labels = jp.weights.map((w, p) =>
+    `<span style="flex-grow:${w}" class="${p === jp.current ? 'cur' : ''}">P${p}</span>`).join('');
+  return `<div class="card journey" onclick="view='phases';renderAll()" title="The whole journey — tap for phases">
+    <div class="track"><span class="end">🩹</span><div class="segwrap">${segs}</div><span class="end">🧗</span></div>
+    <div class="labels">${labels}</div></div>`;
+}
+
 function renderToday() {
   const day = todayKey();
   const cur = currentPhase(state);
   const hold = holdInfo(state, day);
   const m = metricsFor(state, day);
-  let h = '';
+  let h = journeyBar();
 
   if (flagBannerActive(state)) {
     h += `<div class="banner flag"><b>⚠️ Red flag raised — contact the fracture clinic.</b><br>

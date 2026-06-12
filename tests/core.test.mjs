@@ -198,6 +198,34 @@ test('block openings do NOT reset the trend (deliberate — see holdOn comment)'
   assert.ok(reasons.includes('stiffness trend'), 'trend spanning a block date still holds: ' + reasons);
 });
 
+// ---- journey progress ----
+test('journeyProgress: fresh state is empty; clinic ticks part-fill P0', () => {
+  const st = C.defaultState();
+  assert.deepEqual([...C.journeyProgress(st).segments], [0, 0, 0, 0, 0]);
+  st.ticks.push({ date: '2026-06-19', itemId: 'p0-clinic-brace', count: 1 });
+  assert.ok(Math.abs(C.journeyProgress(st).segments[0] - 1 / 3) < 1e-9);
+});
+test('journeyProgress: criteria fraction fills the current segment, done phases are solid', () => {
+  const st = C.defaultState();
+  st.castOffDate = '2026-06-19';
+  const p2 = C.effectiveCriteria(st, 2);
+  st.criteria.push({ id: p2[0].id, date: 'x' }, { id: p2[1].id, date: 'x' });
+  const jp = C.journeyProgress(st);
+  assert.equal(jp.segments[0], 1);
+  assert.ok(Math.abs(jp.segments[1] - 2 / p2.length) < 1e-9);
+  assert.equal(jp.segments[2], 0);
+});
+test('journeyProgress: phase 4 fills by wall and grade milestones', () => {
+  const st = C.defaultState();
+  st.castOffDate = '2026-06-19';
+  for (let p = 2; p <= 4; p++) for (const c of C.effectiveCriteria(st, p)) st.criteria.push({ id: c.id, date: 'x' });
+  assert.equal(C.journeyProgress(st).segments[4], 0);
+  st.milestones.push({ id: 'm-wall', date: 'x' });
+  assert.equal(C.journeyProgress(st).segments[4], 0.5);
+  st.milestones.push({ id: 'm-grade', date: 'x' });
+  assert.equal(C.journeyProgress(st).segments[4], 1);
+});
+
 // ---- protocol integrity ----
 test('every item/criterion/milestone id is unique', () => {
   for (const key of ['items', 'criteria', 'milestones']) {

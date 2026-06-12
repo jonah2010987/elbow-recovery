@@ -32,6 +32,10 @@ _Avoid_: load, weight, level
 A day-state in which Progress actions are disabled and "repeat the same load" is shown, while ticking at the current Dose remains available. Entered when the morning settle prompt is answered "no" (lasts that day) or when a pain/stiffness trend is rising (persists until the trend clears). Trend comparisons never span the cast-off boundary: post-cast soreness is expected physiology, not regression. Brace block openings deliberately do not reset the trend — the Hold banner explains the likely bump instead. After 5 consecutive Hold days the app suggests stepping back a Phase but never does it automatically. Hold means repeat, not rest.
 _Avoid_: rest day, deload
 
+**Journey Bar**:
+The Today-view visual of progress through the whole Protocol: five phase segments whose fill is driven by Entry Criteria and Milestones, never by dates. Guide durations set only the segment widths. It ends at "first session at previous grade".
+_Avoid_: timeline (it is not time-based)
+
 **Lifespan**:
 The window during which an Item appears on the Today view: it starts when a Phase unlocks and ends when a later Phase unlocks or a named retirement condition is met. Items can span multiple Phases.
 _Avoid_: duration, schedule
