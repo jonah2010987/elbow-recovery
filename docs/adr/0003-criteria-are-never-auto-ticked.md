@@ -1,0 +1,3 @@
+# Entry criteria are never auto-ticked from logged metrics
+
+Several entry criteria correspond directly to metrics the app already collects (extension deficit, grip ratio), so auto-unlocking phases from data is the obvious design. We deliberately rejected it: self-measured data is noisy (photo-estimated angles), and a single optimistic measurement unlocking a loading phase is the failure mode a criteria-gated protocol exists to prevent. Every criterion is ticked by a human; the app displays the relevant measurements as evidence beside the checkbox but never acts on them. The same human-in-the-loop principle applies to stepping back a phase (the app suggests after sustained Hold, never acts) and to red-flag banners (cleared only by explicit action).
