@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10141a">
+<title>Elbow Recovery</title>
+<style>
+  :root {
+    --bg: #10141a; --card: #1a212b; --card2: #212a36; --line: #2c3645;
+    --text: #e8edf4; --dim: #8c99aa; --accent: #4fa3ff; --good: #3ecf8e;
+    --warn: #ffb454; --bad: #ff6b6b; --hold: #b08850;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: 70px; -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5; background: var(--bg);
+    padding: 12px 16px 8px; display: flex; align-items: baseline; gap: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 1.05rem; font-weight: 700; }
+  .chip { font-size: .75rem; color: var(--accent); background: #1c2c42; padding: 2px 8px; border-radius: 10px; }
+  .streak { margin-left: auto; font-size: .8rem; color: var(--dim); }
+  main { padding: 12px 12px 0; max-width: 560px; margin: 0 auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 10px;
+  }
+  .card h3 { font-size: .95rem; margin-bottom: 2px; }
+  .detail { font-size: .78rem; color: var(--dim); line-height: 1.4; margin-top: 4px; }
+  .banner { border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; font-size: .85rem; line-height: 1.4; }
+  .banner.flag { background: #3a1d1d; border: 1px solid var(--bad); }
+  .banner.hold { background: #332a1c; border: 1px solid var(--hold); }
+  .banner.brace { background: #1c2c42; border: 1px solid #2c4a73; }
+  .banner.info { background: var(--card); border: 1px solid var(--line); color: var(--dim); }
+  .banner button { margin-top: 8px; }
+  button {
+    font: inherit; color: var(--text); background: var(--card2);
+    border: 1px solid var(--line); border-radius: 9px; padding: 8px 14px; cursor: pointer;
+  }
+  button:disabled { opacity: .35; cursor: default; }
+  button.primary { background: #1d4f8c; border-color: #2a6cbf; }
+  button.small { padding: 4px 10px; font-size: .78rem; }
+  button.ghost { background: none; border: none; color: var(--dim); padding: 4px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .row.between { justify-content: space-between; }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 10px; }
+  .seg button { padding: 6px 0; width: 28px; font-size: .8rem; border-radius: 7px; }
+  .seg button.sel { background: #1d4f8c; border-color: var(--accent); }
+  .yn button.sel { background: #1d4f8c; border-color: var(--accent); }
+  .tally { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .tally .count { font-size: 1.1rem; font-weight: 700; min-width: 70px; }
+  .tally button.plus { font-size: 1.3rem; width: 52px; height: 44px; }
+  .done { color: var(--good); }
+  .dose { font-size: .8rem; color: var(--warn); margin-top: 6px; }
+  .check { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; }
+  .check input { width: 20px; height: 20px; margin-top: 1px; accent-color: var(--accent); }
+  .check .ev { display: block; font-size: .72rem; color: var(--dim); }
+  .lockedTag { font-size: .72rem; color: var(--dim); }
+  .phasecard.current { border-color: var(--accent); }
+  .phasecard h3 .st { font-size: .72rem; margin-left: 6px; }
+  nav {
+    position: fixed; bottom: 0; left: 0; right: 0; display: flex; z-index: 5;
+    background: var(--card); border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav button { flex: 1; background: none; border: none; border-radius: 0; color: var(--dim); font-size: .68rem; padding: 8px 0 6px; }
+  nav button .ico { display: block; font-size: 1.15rem; }
+  nav button.active { color: var(--accent); }
+  .timer { margin-top: 8px; font-size: .85rem; }
+  .timer .disp { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem; margin-left: 8px; }
+  svg.chart { width: 100%; height: auto; background: var(--card2); border-radius: 8px; margin-top: 6px; }
+  .legend { font-size: .7rem; color: var(--dim); margin-top: 2px; }
+  .mile { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .mile:last-child { border-bottom: none; }
+  .mile .when { margin-left: auto; font-size: .75rem; color: var(--dim); white-space: nowrap; }
+  .mile .nm { font-size: .9rem; }
+  .mile.unfired { opacity: .55; }
+  input[type=date], input[type=number], input[type=text] {
+    font: inherit; background: var(--card2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; max-width: 160px;
+  }
+  table.block { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: .85rem; }
+  table.block td { padding: 4px 6px 4px 0; }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(5,8,12,.88); z-index: 50;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .overlay.show { display: flex; }
+  .celebrate { text-align: center; }
+  .celebrate .emo { font-size: 4rem; }
+  .celebrate.big .emo { font-size: 6rem; }
+  .celebrate h2 { margin: 12px 0 4px; }
+  .celebrate .when { color: var(--dim); }
+  .celebrate .hint { margin-top: 26px; font-size: .8rem; color: var(--dim); }
+  .modalbox { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; width: 100%; max-width: 480px; max-height: 86vh; overflow-y: auto; }
+  .modalbox h3 { margin-bottom: 10px; }
+  .sub { font-size: .8rem; color: var(--dim); margin: 8px 0; line-height: 1.45; }
+  details summary { cursor: pointer; color: var(--dim); font-size: .8rem; padding: 4px 0; }
+  ul.notes { font-size: .78rem; color: var(--dim); line-height: 1.5; padding-left: 18px; margin-top: 6px; }
+  .secthead { font-size: .8rem; color: var(--dim); margin: 16px 4px 6px; text-transform: uppercase; letter-spacing: .06em; }
+  .amber { color: var(--warn); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Elbow Recovery</h1>
+  <span class="chip" id="phaseChip"></span>
+  <span class="streak" id="streakBox"></span>
+</header>
+
+<main>
+  <div class="view" id="view-today"></div>
+  <div class="view" id="view-phases"></div>
+  <div class="view" id="view-trends"></div>
+  <div class="view" id="view-milestones"></div>
+  <div class="view" id="view-settings"></div>
+</main>
+
+<nav id="tabs">
+  <button data-v="today"><span class="ico">☑️</span>Today</button>
+  <button data-v="phases"><span class="ico">🪜</span>Phases</button>
+  <button data-v="trends"><span class="ico">📈</span>Trends</button>
+  <button data-v="milestones"><span class="ico">🏁</span>Milestones</button>
+  <button data-v="settings"><span class="ico">⚙️</span>Settings</button>
+</nav>
+
+<div class="overlay" id="celebration"></div>
+<div class="overlay" id="modal"></div>
+
+<script id="core">
+/* ============================================================
+   CORE — protocol config + pure logic. No DOM access here:
+   this block is executed in Node by tests/core.test.mjs.
+   IDs are permanent (ADR 0002): regenerations must keep them.
+   ============================================================ */
+
+const PROTOCOL = {
+  version: '2026-06-12',
+  sourceDoc: 'elbow-dislocation-rehab-protocol.md',
+  phases: [
+    { n: 0, name: 'In Cast', guide: '5–19 Jun (weeks 0–2)',
+      notes: [
+        'Log morning stiffness and pain daily from day one — this builds the baseline the trend rules compare against.',
+        'Elevate above heart when sitting/sleeping; ice 15–20 min as needed.',
+      ] },
+    { n: 1, name: 'Restore Motion', guide: '~19 Jun – 3 Jul (weeks 2–4)',
+      notes: [
+        'Stiffness, not re-dislocation, is the main enemy. Active motion only — never forced passive stretching (it drives HO).',
+        'Avoid (brace off): carrying with the arm hanging in extension; reaching out sideways unsupported; passive/partner stretching into extension; any varus/valgus load; supinated loaded extension.',
+        'Expect the last 20–30° of extension to lag for weeks. Normal. Do not chase it passively.',
+        'Red flags → contact fracture clinic: pain rising WITH ROM falling week on week (HO screen); clunking/giving way; ring/little finger tingling.',
+      ] },
+    { n: 2, name: 'First Load', guide: '~3 – 17 Jul (weeks 4–6)',
+      notes: [
+        'All loading mid-range (~30–120° flexion), elbow tucked, forearm neutral or pronated.',
+        'Pain rule: ≤3/10 during, settled by next morning. A next-day flare means repeat the same load, not progress.',
+        'If braced and the clinic agrees, this menu can start ~1 week early, performed in the brace.',
+      ] },
+    { n: 3, name: 'Progressive Strength', guide: '~17 Jul – 14 Aug (weeks 6–10)',
+      notes: [
+        'Pressing is deliberately the slowest progression — it mirrors the injury mechanism (extended arm, axial load).',
+        'No one-arm hangs, no campus, no max hangs in this phase.',
+        'Eccentrics bite the next day: start overload at 110–120%, not max.',
+        'Book a physio review around week 6, and a stability check before Phase 4.',
+      ] },
+    { n: 4, name: 'Return to the Wall', guide: '~14 Aug – 11 Sep (weeks 10–14)',
+      notes: [
+        'Static movement only at first. Down-climb everything — do not drop off the wall.',
+        'Avoid early: gastons, wide compression, mantles and palm-down press-outs, steep roofs, laybacks on the injured side.',
+        'Fingers: open-hand over crimp, big holds, no hangboard/board projecting, no tweaky crimps or pockets for a couple of months.',
+        'Plan for a 4–5 month arc to full return; week 14 is the optimistic end, not the target. Max dynamic moves/campus: earliest ~week 16.',
+        'Reintroduce falling deliberately from ~week 12: low, soft, tucked-arm landings, practised on purpose.',
+      ] },
+  ],
+  items: [
+    { id: 'p0-grip', phase: 0, name: 'Grip & wrist work (in cast)', cadence: 'tally', target: 2, max: 4,
+      detail: 'Hard isometric grip (ball/putty) and finger/wrist motion as the cast allows. Elbow stays put.',
+      retire: { phase: 1 } },
+    { id: 'p0-clinic-brace', phase: 0, name: 'Clinic: precautionary or instability?', cadence: 'once',
+      detail: 'Ask at the 19 Jun visit: "Is the brace precautionary, or did you find instability?" The answer sets how cautious Phase 2 must be.',
+      retire: { phase: 1 } },
+    { id: 'p0-clinic-block', phase: 0, name: 'Clinic: get the block schedule', cadence: 'once',
+      detail: '"What is my extension block schedule?" Their schedule overrides the generic one. Enter it when marking cast-off.',
+      retire: { phase: 1 } },
+    { id: 'p0-clinic-stability', phase: 0, name: 'Clinic: was stability graded?', cadence: 'once',
+      detail: 'Confirm there is no documented gross instability before Phase 2 loading.',
+      retire: { phase: 1 } },
+    { id: 'p1-rom', phase: 1, name: 'ROM session', cadence: 'tally', target: 4, max: 6,
+      detail: 'Little and often. Supine overhead flexion/extension ×10–15 (upper arm vertical, pronated) · overhead pronation/supination ×10–15 · dependent-position AROM to the brace block, pronated, active only. No partner stretching, no pushing with the other hand.',
+      retire: { criterion: 'c-p3-ext10' } },
+    { id: 'p1-iso', phase: 1, name: 'Isometrics', cadence: 'daily', timer: 'iso',
+      detail: 'Biceps 5×10 s at ~50–70% (wrist up into other hand) · triceps 5×10 s (wrist down into table) · shoulder all directions, elbow supported.',
+      retire: { phase: 2 } },
+    { id: 'p1-wrist', phase: 1, name: 'Wrist & grip', cadence: 'daily',
+      detail: 'Wrist AROM, putty/ball grip, banded finger extensions. Elbow at 90° by your side.',
+      retire: { phase: 2 } },
+    { id: 'p2-llld', phase: 2, name: 'Long-duration extension hold', cadence: 'tally', target: 2, max: 3, timer: 'countdown',
+      detail: 'Only once the brace block is fully open and a deficit persists. Arm supported on a bench, 0.5–1 kg cuff at the wrist, 3–5 min at comfortable end range. This — not ballistic stretching — is how extension comes back.',
+      retire: { criterion: 'c-p3-ext10' } },
+    { id: 'p2-voltra', phase: 2, name: 'Voltra session (light menu)', cadence: 'weekly', target: 3, loading: true,
+      dose: 'lowest meaningful resistance, 3×15–20',
+      detail: 'Mid-range, elbow tucked: neutral-grip cable curl · pushdown · seated row (elbows close) · wrist curls + reverse · pronation/supination hammer-style ×10 slow. Add band external rotation + serratus wall slides.',
+      retire: { phase: 3 } },
+    { id: 'p3-strength', phase: 3, name: 'Strength session', cadence: 'weekly', target: 3, loading: true,
+      dose: '3×15, clean top of range',
+      detail: 'Curls, pushdowns, rows: 3×15 → 4×8–10, add load when the top of the range is clean. ~Week 8+: eccentric overload 110–120% on curls/pushdowns. Kneeling lat pulldown before any pull-ups. Pressing: incline push-ups on rack rails, hands walking lower weekly toward the floor.',
+      retire: { phase: 4 } },
+    { id: 'p3-cc', phase: 3, name: 'Closed-chain & proprioception', cadence: 'weekly', target: 3,
+      detail: 'Quadruped weight shifts → good-arm lifts → slow shoulder taps · wall push-up holds with perturbation · ball dribbles vs wall 30–60 s · bear crawls from ~week 8.',
+      retire: { phase: 4 } },
+    { id: 'p3-hang', phase: 3, name: 'Hanging progression', cadence: 'weekly', target: 2, loading: true,
+      dose: 'feet on floor, ~30–50% BW, arms slightly bent',
+      detail: 'Progress knee-bend depth → 70–80% BW → full bodyweight on jugs, slight bend, build to 3×20 s pain-free. That is the ticket to the wall. No one-arm, no campus, no max hangs.',
+      retire: { phase: 4 } },
+    { id: 'p4-wall', phase: 4, name: 'Wall session', cadence: 'weekly', target: 2, loading: true,
+      dose: 'vertical/slab, jugs, 3–4 grades below warm-up, static, top-rope/autobelay',
+      detail: 'Lock off and reach — no dynos, deadpoints, or cutting loose. Down-climb everything. Open-hand over crimp; good footholds; short sessions. Weeks 12–14: gentle overhang, two-handed catches before one-arm.',
+      retire: null },
+    { id: 'p4-antagonist', phase: 4, name: 'Antagonist & elbow work', cadence: 'weekly', target: 2,
+      detail: 'Pressing, reverse wrist curls, pronation/supination. Keep for ≥6 months — the ligament remodels for about a year.',
+      retire: null },
+  ],
+  criteria: [
+    { id: 'c-p2-arom', phase: 2, text: 'AROM improving week on week' },
+    { id: 'c-p2-pain', phase: 2, text: 'Pain ≤3/10 during exercises' },
+    { id: 'c-p2-stable', phase: 2, text: 'No instability symptoms' },
+    { id: 'c-p2-clinic', phase: 2, text: 'Clinic has confirmed a stable joint' },
+    { id: 'c-p3-ext10', phase: 3, text: 'Extension within ~10° of the other side', evidence: 'extension' },
+    { id: 'c-p3-flexrot', phase: 3, text: 'Full flexion and rotation' },
+    { id: 'c-p3-painfree', phase: 3, text: 'Phase 2 loads pain-free' },
+    { id: 'c-p4-hang', phase: 4, text: 'Full bodyweight hang 3×20 s pain-free' },
+    { id: 'c-p4-pushup', phase: 4, text: 'Floor push-ups pain-free' },
+    { id: 'c-p4-grip', phase: 4, text: 'Grip ≥85–90% of the other side' },
+    { id: 'c-p4-apprehension', phase: 4, text: 'No apprehension on loaded extension' },
+  ],
+  milestones: [
+    { id: 'm-phase1', name: 'Cast off — rehab begins', emoji: '🎉', bound: 'phase:1' },
+    { id: 'm-phase2', name: 'Phase 2 — first external load', emoji: '🏋️', bound: 'phase:2' },
+    { id: 'm-phase3', name: 'Phase 3 — progressive strength', emoji: '💪', bound: 'phase:3' },
+    { id: 'm-phase4', name: 'WALL READY', emoji: '🧗', bound: 'phase:4', big: true },
+    { id: 'm-hang', name: 'First full bodyweight hang', emoji: '🙌', bound: 'criterion:c-p4-hang' },
+    { id: 'm-pushup', name: 'First floor push-up', emoji: '⬇️', bound: 'criterion:c-p4-pushup' },
+    { id: 'm-wall', name: 'First wall session', emoji: '🪨', bound: 'tick:p4-wall' },
+    { id: 'm-fullext', name: 'First full extension', emoji: '📐', manual: true },
+    { id: 'm-grade', name: 'First session at previous grade', emoji: '👑', manual: true },
+  ],
+};
+
+const EMA_ALPHA = 0.3, TREND_LOOKBACK = 5, TREND_BAND = 0.5, HOLD_STEPBACK_DAYS = 5;
+const DAY_ROLLOVER_H = 4;
+
+function defaultState() {
+  return {
+    schemaVersion: 1,
+    castOffDate: null,
+    braceRetired: false,
+    ticks: [],        // {date, itemId, count, dose?}
+    metrics: [],      // {date, stiffness, pain, backfill?}
+    extension: [],    // {date, deg}
+    settle: [],       // {date, settled}
+    criteria: [],     // {id, date}
+    doseHistory: [],  // {date, itemId, dose}
+    blockSchedule: [],// {date, deg}
+    redFlags: [],     // {date(weekKey), rom, clunk, ulnar}
+    clinicContacted: [], // {date}
+    milestones: [],   // {id, date}
+    overrides: { criteria: { removed: [], text: {}, added: [] }, phaseGuide: {} },
+    lastExport: null,
+  };
+}
+
+/* ---- dates: keys are local 'YYYY-MM-DD'; the day rolls over at 4am ---- */
+function localISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function todayKey(now) {
+  const d = new Date((now || new Date()).getTime() - DAY_ROLLOVER_H * 3600 * 1000);
+  return localISO(d);
+}
+function addDays(key, n) {
+  const [y, m, d] = key.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  return dt.toISOString().slice(0, 10);
+}
+function dayOfWeek(key) { // 0=Sun
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+function weekKeyOf(key) { // Monday of that week
+  return addDays(key, -((dayOfWeek(key) + 6) % 7));
+}
+
+/* ---- metrics & trend ---- */
+function emaSeries(records, field, alpha) {
+  const a = alpha == null ? EMA_ALPHA : alpha;
+  const sorted = records.filter(r => r[field] != null).sort((x, y) => x.date < y.date ? -1 : 1);
+  const out = [];
+  let e = null;
+  for (const r of sorted) {
+    e = e == null ? r[field] : a * r[field] + (1 - a) * e;
+    out.push({ date: r.date, ema: e, raw: r[field] });
+  }
+  return out;
+}
+function emaAt(series, dayKey) {
+  let v = null;
+  for (const p of series) { if (p.date <= dayKey) v = p.ema; else break; }
+  return v;
+}
+function trendRising(records, field, dayKey) {
+  const s = emaSeries(records, field);
+  const now = emaAt(s, dayKey);
+  const past = emaAt(s, addDays(dayKey, -TREND_LOOKBACK));
+  if (now == null || past == null) return false;
+  return (now - past) >= TREND_BAND;
+}
+function metricsFor(state, dayKey) { return state.metrics.find(m => m.date === dayKey) || null; }
+function settleFor(state, dayKey) { return state.settle.find(s => s.date === dayKey) || null; }
+
+function holdOn(state, dayKey) {
+  const s = settleFor(state, dayKey);
+  const reasons = [];
+  if (s && s.settled === false) reasons.push('settle');
+  if (trendRising(state.metrics, 'pain', dayKey)) reasons.push('pain trend');
+  if (trendRising(state.metrics, 'stiffness', dayKey)) reasons.push('stiffness trend');
+  return reasons;
+}
+function holdInfo(state, dayKey) {
+  const reasons = holdOn(state, dayKey);
+  let consecutive = 0;
+  let d = dayKey;
+  while (holdOn(state, d).length > 0 && consecutive < 60) { consecutive++; d = addDays(d, -1); }
+  return { hold: reasons.length > 0, reasons, consecutive };
+}
+
+/* ---- criteria & phases ---- */
+function effectiveCriteria(state, phase) {
+  const ov = state.overrides.criteria;
+  const removed = new Set(ov.removed);
+  return PROTOCOL.criteria
+    .filter(c => c.phase === phase && !removed.has(c.id))
+    .map(c => ({ ...c, text: ov.text[c.id] || c.text }))
+    .concat(ov.added.filter(c => c.phase === phase));
+}
+function critTicked(state, id) { return state.criteria.some(c => c.id === id); }
+function currentPhase(state) {
+  if (!state.castOffDate) return 0;
+  let cur = 1;
+  for (let p = 2; p <= 4; p++) {
+    const crits = effectiveCriteria(state, p);
+    if (crits.length > 0 && crits.every(c => critTicked(state, c.id))) cur = p;
+    else break;
+  }
+  return cur;
+}
+
+/* ---- items ---- */
+function itemRetired(item, state, cur) {
+  if (!item.retire) return false;
+  if (item.retire.phase != null && cur >= item.retire.phase) return true;
+  if (item.retire.criterion && critTicked(state, item.retire.criterion)) return true;
+  return false;
+}
+function activeItems(state) {
+  const cur = currentPhase(state);
+  return PROTOCOL.items.filter(it => it.phase <= cur && !itemRetired(it, state, cur));
+}
+function tickFor(state, dayKey, itemId) {
+  return state.ticks.find(t => t.date === dayKey && t.itemId === itemId) || null;
+}
+function weekCount(state, dayKey, itemId) {
+  const wk = weekKeyOf(dayKey);
+  return state.ticks.filter(t => t.itemId === itemId && t.count > 0 && weekKeyOf(t.date) === wk).length;
+}
+function everTicked(state, itemId) { return state.ticks.some(t => t.itemId === itemId && t.count > 0); }
+function currentDose(state, itemId) {
+  const hist = state.doseHistory.filter(d => d.itemId === itemId);
+  if (hist.length) return hist[hist.length - 1].dose;
+  const it = PROTOCOL.items.find(i => i.id === itemId);
+  return it && it.dose || null;
+}
+function hadLoadingTick(state, dayKey) {
+  return state.ticks.some(t => {
+    if (t.date !== dayKey || !(t.count > 0)) return false;
+    const it = PROTOCOL.items.find(i => i.id === t.itemId);
+    return it && it.loading;
+  });
+}
+
+/* ---- streak, flags, brace ---- */
+function streak(state, dayKey) {
+  const sameDay = k => state.metrics.some(m => m.date === k && !m.backfill);
+  let d = dayKey;
+  if (!sameDay(d)) d = addDays(d, -1); // an unanswered today doesn't break it yet
+  let n = 0;
+  while (sameDay(d)) { n++; d = addDays(d, -1); }
+  return n;
+}
+function flagBannerActive(state) {
+  const flagged = state.redFlags.filter(f => f.rom || f.clunk || f.ulnar).map(f => f.date).sort();
+  if (!flagged.length) return false;
+  const lastFlag = flagged[flagged.length - 1];
+  const contacts = state.clinicContacted.map(c => c.date).sort();
+  const lastContact = contacts[contacts.length - 1];
+  return !lastContact || lastContact < lastFlag;
+}
+function redFlagDueThisWeek(state, dayKey) {
+  const wk = weekKeyOf(dayKey);
+  return !state.redFlags.some(f => f.date === wk);
+}
+function currentBlock(state, dayKey) {
+  const rows = [...state.blockSchedule].sort((a, b) => a.date < b.date ? -1 : 1);
+  let v = null;
+  for (const r of rows) { if (r.date <= dayKey) v = r; }
+  return v;
+}
+
+/* ---- export shape ---- */
+function exportPayload(state, exportedAt) {
+  return { app: 'elbow-recovery', schemaVersion: state.schemaVersion, protocolVersion: PROTOCOL.version, exportedAt, state };
+}
+function validImport(payload) {
+  return !!(payload && payload.app === 'elbow-recovery' && payload.schemaVersion === 1 && payload.state && Array.isArray(payload.state.ticks));
+}
+
+/* Node test hook (no-op in the browser) */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { PROTOCOL, defaultState, todayKey, addDays, dayOfWeek, weekKeyOf, emaSeries, emaAt,
+    trendRising, holdOn, holdInfo, effectiveCriteria, critTicked, currentPhase, itemRetired, activeItems,
+    tickFor, weekCount, everTicked, currentDose, hadLoadingTick, streak, flagBannerActive,
+    redFlagDueThisWeek, currentBlock, exportPayload, validImport, metricsFor, settleFor };
+}
+</script>
+
+<script id="app">
+/* ============================================================
+   APP — state persistence, rendering, interaction.
+   ============================================================ */
+const STORE_KEY = 'elbow-recovery-v1';
+const REPO_URL = 'https://github.com/jonah2010987/elbow-recovery'; // protocol doc reference
+
+let state = loadState();
+let view = 'today';
+let promptDraft = {};
+let trendRange = 42;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultState();
+    const s = JSON.parse(raw);
+    return Object.assign(defaultState(), s);
+  } catch (e) { return defaultState(); }
+}
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); renderAll(); }
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function fmtDate(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
+/* ---------- milestones ---------- */
+function fired(id) { return state.milestones.find(m => m.id === id) || null; }
+function fireMilestone(id) {
+  if (fired(id)) return;
+  const def = PROTOCOL.milestones.find(m => m.id === id);
+  if (!def) return;
+  state.milestones.push({ id, date: todayKey() });
+  const el = document.getElementById('celebration');
+  el.innerHTML = `<div class="celebrate ${def.big ? 'big' : ''}">
+      <div class="emo">${def.emoji}</div><h2>${esc(def.name)}</h2>
+      <div class="when">${fmtDate(todayKey())}</div>
+      ${def.big ? '<div class="sub">Every entry criterion ticked. Vertical, jugs, static, down-climb everything.</div>' : ''}
+      <div class="hint">tap anywhere to continue</div></div>`;
+  el.classList.add('show');
+  if (navigator.vibrate) navigator.vibrate([100, 60, 100]);
+}
+document.getElementById('celebration').addEventListener('click', e => { e.currentTarget.classList.remove('show'); renderAll(); });
+
+function checkPhaseMilestones(prevPhase) {
+  const cur = currentPhase(state);
+  for (let p = prevPhase + 1; p <= cur; p++) fireMilestone('m-phase' + p);
+}
+
+/* ---------- modal ---------- */
+function showModal(html) {
+  const el = document.getElementById('modal');
+  el.innerHTML = `<div class="modalbox">${html}</div>`;
+  el.classList.add('show');
+}
+function closeModal() {
+  const el = document.getElementById('modal');
+  el.classList.remove('show'); el.innerHTML = '';
+}
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+/* ---------- header & tabs ---------- */
+function renderHeader() {
+  const cur = currentPhase(state);
+  const ph = PROTOCOL.phases[cur];
+  let next = '';
+  if (cur < 4 && state.castOffDate) {
+    const crits = effectiveCriteria(state, cur + 1);
+    const done = crits.filter(c => critTicked(state, c.id)).length;
+    next = ` · ${done}/${crits.length} to P${cur + 1}`;
+  }
+  document.getElementById('phaseChip').textContent = `Phase ${cur}: ${ph.name}${next}`;
+  const st = streak(state, todayKey());
+  document.getElementById('streakBox').textContent = st > 0 ? `🔥 ${st}` : '';
+}
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  view = b.dataset.v; renderAll();
+});
+
+/* ---------- TODAY ---------- */
+function renderToday() {
+  const day = todayKey();
+  const cur = currentPhase(state);
+  const hold = holdInfo(state, day);
+  const m = metricsFor(state, day);
+  let h = '';
+
+  if (flagBannerActive(state)) {
+    h += `<div class="banner flag"><b>⚠️ Red flag raised — contact the fracture clinic.</b><br>
+      This stays until you confirm you have been in touch.<br>
+      <button class="small" onclick="contactedClinic()">I've contacted the clinic</button></div>`;
+  }
+
+  if (!m) h += morningPromptCard(day);
+  h += backfillCards(day);
+
+  if (hold.hold && m) {
+    h += `<div class="banner hold"><b>⏸ Hold — repeat the same load, don't progress.</b><br>
+      Reason: ${hold.reasons.join(' + ')}. Ticking at the current dose stays on.${
+      hold.consecutive >= HOLD_STEPBACK_DAYS ? `<br><b class="amber">${hold.consecutive} days on hold — consider stepping back a phase. Talk to your physio.</b>` : ''}</div>`;
+  }
+  if (!m) h += `<div class="banner info">Day unassessed — answer the morning prompt to enable Progress. Ticking is open.</div>`;
+
+  if (state.castOffDate && !state.braceRetired) {
+    const blk = currentBlock(state, day);
+    if (blk) h += `<div class="banner brace">🦾 Brace: extension blocked at <b>${blk.deg}°</b>${blk.deg === 0 ? ' (fully open)' : ''}. Work freely inside the arc — don't fight the stop.</div>`;
+  }
+  if (!state.castOffDate) {
+    h += `<div class="banner brace">🩹 In cast. Mark cast-off on the Phases tab when the brace is fitted (~19 Jun) — have the block schedule ready to enter.</div>`;
+  }
+
+  // weekly extension measurement nudge (Phase 1+)
+  if (state.castOffDate) {
+    const recent = state.extension.some(e => e.date > addDays(day, -7));
+    if (!recent) {
+      h += `<div class="card"><h3>📐 Weekly extension check</h3>
+        <div class="detail">Photo against a wall vs the good arm. Enter the deficit in degrees (0 = equal).</div>
+        <div class="row" style="margin-top:8px">
+          <input type="number" id="extIn" min="0" max="60" inputmode="numeric" placeholder="deg">
+          <button class="small" onclick="saveExtension()">Save</button></div></div>`;
+    }
+  }
+
+  const canProgress = !!m && !hold.hold;
+  for (const it of activeItems(state)) h += itemCard(it, day, canProgress);
+  document.getElementById('view-today').innerHTML = h;
+}
+
+function segButtons(field, n) {
+  let b = '';
+  for (let i = 0; i <= n; i++) {
+    b += `<button class="${promptDraft[field] === i ? 'sel' : ''}" onclick="setDraft('${field}',${i})">${i}</button>`;
+  }
+  return `<div class="seg">${b}</div>`;
+}
+function ynButtons(field, yesLbl, noLbl) {
+  return `<div class="row yn" style="margin:6px 0 10px">
+    <button class="small ${promptDraft[field] === true ? 'sel' : ''}" onclick="setDraft('${field}',true)">${yesLbl}</button>
+    <button class="small ${promptDraft[field] === false ? 'sel' : ''}" onclick="setDraft('${field}',false)">${noLbl}</button></div>`;
+}
+function setDraft(f, v) { promptDraft[f] = v; renderAll(); }
+
+function morningPromptCard(day) {
+  const askSettle = hadLoadingTick(state, addDays(day, -1));
+  const askFlags = redFlagDueThisWeek(state, day);
+  let h = `<div class="card"><h3>🌅 Morning prompt — ${fmtDate(day)}</h3>
+    <div class="sub">Morning stiffness (0 = none, 10 = won't move)</div>${segButtons('stiffness', 10)}
+    <div class="sub">Morning pain (0–10)</div>${segButtons('pain', 10)}`;
+  if (askSettle) {
+    h += `<div class="sub">Did yesterday's loading work settle by this morning?</div>${ynButtons('settled', 'Yes, settled', 'No — flared')}`;
+  }
+  if (askFlags) {
+    const evid = state.extension.slice(-3).map(e => `${e.deg}° (${fmtDate(e.date)})`).join(' · ') || 'no measurements yet';
+    h += `<div class="sub"><b>Weekly red-flag check</b></div>
+      <div class="sub">ROM going backwards week on week? <span class="ev">Extension deficit: ${evid}</span></div>${ynButtons('rfRom', 'Yes', 'No')}
+      <div class="sub">Clunking or giving way?</div>${ynButtons('rfClunk', 'Yes', 'No')}
+      <div class="sub">Pins/needles or numbness in ring/little finger?</div>${ynButtons('rfUlnar', 'Yes', 'No')}`;
+  }
+  const ready = promptDraft.stiffness != null && promptDraft.pain != null
+    && (!askSettle || promptDraft.settled != null)
+    && (!askFlags || (promptDraft.rfRom != null && promptDraft.rfClunk != null && promptDraft.rfUlnar != null));
+  h += `<button class="primary" ${ready ? '' : 'disabled'} onclick="saveMorningPrompt(${askSettle}, ${askFlags})">Save</button></div>`;
+  return h;
+}
+function saveMorningPrompt(askSettle, askFlags) {
+  const day = todayKey();
+  state.metrics.push({ date: day, stiffness: promptDraft.stiffness, pain: promptDraft.pain });
+  if (askSettle) state.settle.push({ date: day, settled: promptDraft.settled });
+  if (askFlags) state.redFlags.push({ date: weekKeyOf(day), rom: promptDraft.rfRom, clunk: promptDraft.rfClunk, ulnar: promptDraft.rfUlnar });
+  promptDraft = {};
+  save();
+}
+function backfillCards(day) {
+  let h = '';
+  for (const off of [-1, -2]) {
+    const k = addDays(day, off);
+    if (metricsFor(state, k)) continue;
+    if (!state.metrics.length && !state.ticks.length) continue; // brand-new app: nothing to backfill
+    h += `<details class="card"><summary>Missed ${fmtDate(k)}? Backfill stiffness & pain</summary>
+      <div class="row" style="margin-top:8px">
+        <input type="number" id="bfS${off}" min="0" max="10" inputmode="numeric" placeholder="stiff">
+        <input type="number" id="bfP${off}" min="0" max="10" inputmode="numeric" placeholder="pain">
+        <button class="small" onclick="saveBackfill(${off})">Save</button></div>
+      <div class="sub">Backfill repairs the trend data, not the streak.</div></details>`;
+  }
+  return h;
+}
+function saveBackfill(off) {
+  const k = addDays(todayKey(), off);
+  const s = Number(document.getElementById('bfS' + off).value);
+  const p = Number(document.getElementById('bfP' + off).value);
+  if (!Number.isFinite(s) || !Number.isFinite(p) || s < 0 || s > 10 || p < 0 || p > 10 ||
+      document.getElementById('bfS' + off).value === '' || document.getElementById('bfP' + off).value === '') return;
+  state.metrics.push({ date: k, stiffness: s, pain: p, backfill: true });
+  save();
+}
+function saveExtension() {
+  const v = document.getElementById('extIn').value;
+  const n = Number(v);
+  if (v === '' || !Number.isFinite(n) || n < 0) return;
+  state.extension.push({ date: todayKey(), deg: n });
+  save();
+}
+function contactedClinic() {
+  state.clinicContacted.push({ date: todayKey() });
+  save();
+}
+
+/* ---------- item cards ---------- */
+function itemCard(it, day, canProgress) {
+  const t = tickFor(state, day, it.id);
+  const n = t ? t.count : 0;
+  let body = '';
+
+  if (it.cadence === 'tally') {
+    const done = n >= it.target;
+    body = `<div class="tally">
+      <button class="plus" onclick="bumpTally('${it.id}')">＋</button>
+      <span class="count ${done ? 'done' : ''}">${n} / ${it.target}–${it.max}${done ? ' ✓' : ''}</span>
+      ${n > 0 ? `<button class="ghost" onclick="bumpTally('${it.id}',-1)">undo</button>` : ''}</div>`;
+  } else if (it.cadence === 'daily') {
+    body = `<label class="check" style="margin-top:6px"><input type="checkbox" ${n > 0 ? 'checked' : ''}
+      onchange="setDaily('${it.id}', this.checked)"><span class="${n > 0 ? 'done' : ''}">${n > 0 ? 'Done today ✓' : 'Mark done'}</span></label>`;
+  } else if (it.cadence === 'weekly') {
+    const wk = weekCount(state, day, it.id);
+    const doneWeek = wk >= it.target;
+    body = `<div class="row" style="margin-top:8px">
+      <button ${n > 0 ? 'disabled' : ''} onclick="logWeekly('${it.id}')">${n > 0 ? 'Logged today ✓' : 'Log session'}</button>
+      <span class="${doneWeek ? 'done' : ''}">${wk} of ${it.target} this week</span>
+      ${n > 0 ? `<button class="ghost" onclick="undoWeekly('${it.id}')">undo</button>` : ''}</div>`;
+  } else if (it.cadence === 'once') {
+    const did = everTicked(state, it.id);
+    body = `<label class="check" style="margin-top:6px"><input type="checkbox" ${did ? 'checked' : ''}
+      onchange="setOnce('${it.id}', this.checked)"><span class="${did ? 'done' : ''}">${did ? 'Done ✓' : 'Tick when done'}</span></label>`;
+  }
+
+  let dose = '';
+  if (it.loading) {
+    dose = `<div class="dose">Dose: ${esc(currentDose(state, it.id) || '—')}
+      <button class="small" style="margin-left:8px" ${canProgress ? '' : 'disabled'}
+        onclick="progressDose('${it.id}')">Progress ↗</button></div>`;
+  }
+  let timer = '';
+  if (it.timer === 'iso') timer = `<div class="timer">⏱ <button class="small" onclick="startIso('${it.id}')">5 × 10 s timer</button><span class="disp" id="tm-${it.id}"></span></div>`;
+  if (it.timer === 'countdown') timer = `<div class="timer">⏱ <button class="small" onclick="startCountdown('${it.id}',180)">3 min</button>
+    <button class="small" onclick="startCountdown('${it.id}',240)">4</button>
+    <button class="small" onclick="startCountdown('${it.id}',300)">5</button><span class="disp" id="tm-${it.id}"></span></div>`;
+
+  return `<div class="card"><h3>${esc(it.name)}</h3><div class="detail">${esc(it.detail)}</div>${dose}${body}${timer}</div>`;
+}
+
+function mutateTick(itemId, fn) {
+  const day = todayKey();
+  let t = tickFor(state, day, itemId);
+  if (!t) { t = { date: day, itemId, count: 0 }; state.ticks.push(t); }
+  fn(t);
+  const it = PROTOCOL.items.find(i => i.id === itemId);
+  if (it && it.loading && t.count > 0 && !t.dose) t.dose = currentDose(state, itemId);
+  if (t.count <= 0) state.ticks = state.ticks.filter(x => x !== t);
+}
+function bumpTally(itemId, d) {
+  const it = PROTOCOL.items.find(i => i.id === itemId);
+  mutateTick(itemId, t => { t.count = Math.max(0, Math.min(it.max || 99, t.count + (d || 1))); });
+  fireBoundTickMilestones(itemId);
+  save();
+}
+function setDaily(itemId, on) { mutateTick(itemId, t => { t.count = on ? 1 : 0; }); save(); }
+function setOnce(itemId, on) { mutateTick(itemId, t => { t.count = on ? 1 : 0; }); save(); }
+function logWeekly(itemId) {
+  mutateTick(itemId, t => { t.count = 1; });
+  fireBoundTickMilestones(itemId);
+  save();
+}
+function undoWeekly(itemId) { mutateTick(itemId, t => { t.count = 0; }); save(); }
+function fireBoundTickMilestones(itemId) {
+  for (const m of PROTOCOL.milestones) {
+    if (m.bound === 'tick:' + itemId && everTicked(state, itemId)) fireMilestone(m.id);
+  }
+}
+function progressDose(itemId) {
+  const cur = currentDose(state, itemId) || '';
+  const next = prompt('New dose for this item:', cur);
+  if (next == null || next.trim() === '' || next === cur) return;
+  state.doseHistory.push({ date: todayKey(), itemId, dose: next.trim() });
+  save();
+}
+
+/* ---------- timers ---------- */
+let timerHandle = null;
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880; g.gain.value = 0.15;
+    o.start(); o.stop(ctx.currentTime + 0.18);
+  } catch (e) {}
+  if (navigator.vibrate) navigator.vibrate(180);
+}
+function stopTimer() { if (timerHandle) { clearInterval(timerHandle); timerHandle = null; } }
+function startIso(itemId) {
+  stopTimer();
+  const disp = () => document.getElementById('tm-' + itemId);
+  let rep = 1, phase = 'ON', left = 10;
+  beep();
+  timerHandle = setInterval(() => {
+    const el = disp(); if (!el) { stopTimer(); return; }
+    left--;
+    if (left <= 0) {
+      beep();
+      if (phase === 'ON') { phase = 'REST'; left = 10; }
+      else { rep++; if (rep > 5) { el.textContent = 'done ✓'; stopTimer(); return; } phase = 'ON'; left = 10; }
+    }
+    el.textContent = `rep ${rep}/5 · ${phase} ${left}s`;
+  }, 1000);
+  const el = disp(); if (el) el.textContent = 'rep 1/5 · ON 10s';
+}
+function startCountdown(itemId, secs) {
+  stopTimer();
+  let left = secs;
+  const disp = () => document.getElementById('tm-' + itemId);
+  timerHandle = setInterval(() => {
+    const el = disp(); if (!el) { stopTimer(); return; }
+    left--;
+    if (left <= 0) { el.textContent = 'done ✓'; beep(); stopTimer(); return; }
+    el.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+  }, 1000);
+  const el = disp(); if (el) el.textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+}
+
+/* ---------- PHASES ---------- */
+function renderPhases() {
+  const cur = currentPhase(state);
+  let h = '';
+  for (const ph of PROTOCOL.phases) {
+    const unlocked = ph.n <= cur;
+    const isCur = ph.n === cur;
+    const guide = state.overrides.phaseGuide[ph.n] || ph.guide;
+    let inner = '';
+
+    if (ph.n === 0 && !state.castOffDate) {
+      inner += `<button class="primary" style="margin-top:8px" onclick="castOffModal()">Cast off — brace fitted →</button>`;
+    }
+    if (ph.n >= 2) {
+      const crits = effectiveCriteria(state, ph.n);
+      inner += `<div class="sub" style="margin-top:8px"><b>Entry criteria</b> — ticked by you, never by the app:</div>`;
+      for (const c of crits) {
+        const on = critTicked(state, c.id);
+        let ev = '';
+        if (c.evidence === 'extension') {
+          const last = state.extension[state.extension.length - 1];
+          ev = `<span class="ev">last measured: ${last ? `${last.deg}° (${fmtDate(last.date)})` : 'no measurement yet'}</span>`;
+        }
+        inner += `<label class="check"><input type="checkbox" ${on ? 'checked' : ''}
+          onchange="toggleCriterion('${c.id}', this.checked)"><span>${esc(c.text)}${ev}</span></label>`;
+      }
+    }
+    const items = PROTOCOL.items.filter(i => i.phase === ph.n);
+    if (items.length && ph.n > 0) {
+      inner += `<details><summary>Items in this phase (${items.length})</summary>
+        ${items.map(i => `<div class="sub"><b>${esc(i.name)}</b> — ${esc(i.detail)}</div>`).join('')}</details>`;
+    }
+    inner += `<details><summary>Phase notes</summary><ul class="notes">${ph.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></details>`;
+
+    h += `<div class="card phasecard ${isCur ? 'current' : ''}">
+      <h3>Phase ${ph.n}: ${esc(ph.name)}
+        <span class="st">${isCur ? '— current' : unlocked ? '✓' : '🔒'}</span></h3>
+      <div class="lockedTag">${esc(guide)} — guide only; criteria unlock, dates don't</div>${inner}</div>`;
+  }
+  document.getElementById('view-phases').innerHTML = h;
+}
+function toggleCriterion(id, on) {
+  const prev = currentPhase(state);
+  if (on) { if (!critTicked(state, id)) state.criteria.push({ id, date: todayKey() }); }
+  else state.criteria = state.criteria.filter(c => c.id !== id);
+  for (const m of PROTOCOL.milestones) {
+    if (m.bound === 'criterion:' + id && on) fireMilestone(m.id);
+  }
+  checkPhaseMilestones(prev);
+  save();
+}
+function castOffModal() {
+  showModal(`<h3>Cast off — brace fitted</h3>
+    <div class="sub">Enter the clinic's block schedule: from each date, the brace allows extension to the angle shown (0° = fully open). Edit later in Settings.</div>
+    <div class="row">Cast-off date: <input type="date" id="coDate" value="${todayKey()}"></div>
+    <table class="block" id="coRows"></table>
+    <button class="small" onclick="addCoRow()">+ add row</button>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" onclick="confirmCastOff()">Start Phase 1</button>
+      <button onclick="closeModal()">Cancel</button></div>`);
+  coRowCount = 0;
+  addCoRow(todayKey(), 30); addCoRow(addDays(todayKey(), 7), 20);
+  addCoRow(addDays(todayKey(), 14), 10); addCoRow(addDays(todayKey(), 21), 0);
+}
+let coRowCount = 0;
+function addCoRow(date, deg) {
+  const i = coRowCount++;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input type="date" id="coD${i}" value="${date || ''}"></td>
+    <td><input type="number" id="coG${i}" value="${deg != null ? deg : ''}" min="0" max="90" inputmode="numeric" style="max-width:70px"> °</td>`;
+  document.getElementById('coRows').appendChild(tr);
+}
+function confirmCastOff() {
+  const date = document.getElementById('coDate').value;
+  if (!date) return;
+  const rows = [];
+  for (let i = 0; i < coRowCount; i++) {
+    const d = document.getElementById('coD' + i), g = document.getElementById('coG' + i);
+    if (d && d.value && g && g.value !== '') rows.push({ date: d.value, deg: Number(g.value) });
+  }
+  state.castOffDate = date;
+  state.blockSchedule = rows;
+  closeModal();
+  fireMilestone('m-phase1');
+  save();
+}
+
+/* ---------- TRENDS ---------- */
+function renderTrends() {
+  const day = todayKey();
+  const from = trendRange === 0 ? '0000-00-00' : addDays(day, -trendRange);
+  const mIn = state.metrics.filter(m => m.date >= from);
+  const eIn = state.extension.filter(e => e.date >= from);
+  const doseDates = [...new Set(state.doseHistory.filter(d => d.date >= from).map(d => d.date))];
+  let h = `<div class="row" style="margin-bottom:10px">
+    ${[[14, '2w'], [42, '6w'], [0, 'all']].map(([v, l]) =>
+      `<button class="small ${trendRange === v ? 'primary' : ''}" onclick="setRange(${v})">${l}</button>`).join('')}</div>`;
+  h += `<div class="card"><h3>Pain & stiffness</h3>
+    ${chart(mIn, day, from, doseDates)}
+    <div class="legend">— pain EMA · — stiffness EMA · dots = raw · ▲ = dose change</div></div>`;
+  h += `<div class="card"><h3>Extension deficit (°)</h3>${extChart(eIn, day, from)}
+    <div class="legend">weekly photo measurement vs the good arm</div></div>`;
+  document.getElementById('view-trends').innerHTML = h;
+}
+function setRange(v) { trendRange = v; renderAll(); }
+function dateRangeOf(records, day, from) {
+  const dates = records.map(r => r.date);
+  const lo = from !== '0000-00-00' ? from : (dates.length ? dates.reduce((a, b) => a < b ? a : b) : day);
+  return [lo, day];
+}
+function xPos(date, lo, hi, w) {
+  const span = Math.max(1, dayDiff(lo, hi));
+  return 8 + (w - 16) * (dayDiff(lo, date) / span);
+}
+function dayDiff(a, b) {
+  const p = k => { const [y, m, d] = k.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+  return Math.round((p(b) - p(a)) / 86400000);
+}
+function chart(metrics, day, from, doseDates) {
+  const W = 360, H = 150, ymax = 10;
+  const [lo, hi] = dateRangeOf(metrics, day, from);
+  const y = v => 8 + (H - 24) * (1 - v / ymax);
+  const line = (series, color) => {
+    if (!series.length) return '';
+    const pts = series.map(p => `${xPos(p.date, lo, hi, W).toFixed(1)},${y(p.ema).toFixed(1)}`).join(' ');
+    const dots = series.map(p => `<circle cx="${xPos(p.date, lo, hi, W).toFixed(1)}" cy="${y(p.raw).toFixed(1)}" r="2" fill="${color}" opacity="0.35"/>`).join('');
+    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2"/>${dots}`;
+  };
+  const pain = emaSeries(metrics, 'pain'), stiff = emaSeries(metrics, 'stiffness');
+  const doseMarks = doseDates.map(d =>
+    `<text x="${xPos(d, lo, hi, W).toFixed(1)}" y="${H - 4}" font-size="9" fill="#ffb454" text-anchor="middle">▲</text>`).join('');
+  const grid = [0, 5, 10].map(v => `<line x1="8" x2="${W - 8}" y1="${y(v)}" y2="${y(v)}" stroke="#2c3645" stroke-width="0.5"/>
+    <text x="2" y="${y(v) + 3}" font-size="8" fill="#8c99aa">${v}</text>`).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${grid}${line(pain, '#ff6b6b')}${line(stiff, '#4fa3ff')}${doseMarks}</svg>`;
+}
+function extChart(ext, day, from) {
+  const W = 360, H = 120;
+  if (!ext.length) return `<div class="sub">No measurements yet.</div>`;
+  const [lo, hi] = dateRangeOf(ext, day, from);
+  const ymax = Math.max(10, ...ext.map(e => e.deg));
+  const y = v => 8 + (H - 24) * (1 - v / ymax);
+  const pts = ext.map(e => `${xPos(e.date, lo, hi, W).toFixed(1)},${y(e.deg).toFixed(1)}`).join(' ');
+  const dots = ext.map(e => `<circle cx="${xPos(e.date, lo, hi, W).toFixed(1)}" cy="${y(e.deg).toFixed(1)}" r="3" fill="#3ecf8e"/>`).join('');
+  const grid = [0, ymax].map(v => `<line x1="8" x2="${W - 8}" y1="${y(v)}" y2="${y(v)}" stroke="#2c3645" stroke-width="0.5"/>
+    <text x="2" y="${y(v) + 3}" font-size="8" fill="#8c99aa">${v}</text>`).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${grid}<polyline points="${pts}" fill="none" stroke="#3ecf8e" stroke-width="2"/>${dots}</svg>`;
+}
+
+/* ---------- MILESTONES ---------- */
+function renderMilestones() {
+  const firedList = PROTOCOL.milestones.filter(m => fired(m.id))
+    .sort((a, b) => fired(a.id).date < fired(b.id).date ? -1 : 1);
+  const unfired = PROTOCOL.milestones.filter(m => !fired(m.id));
+  let h = '<div class="card">';
+  if (!firedList.length) h += `<div class="sub">Nothing yet — the first one lands at cast-off.</div>`;
+  for (const m of firedList) {
+    h += `<div class="mile"><span>${m.emoji}</span><span class="nm">${esc(m.name)}</span>
+      <span class="when">${fmtDate(fired(m.id).date)}</span></div>`;
+  }
+  h += '</div><div class="secthead">Still ahead</div><div class="card">';
+  for (const m of unfired) {
+    h += `<div class="mile unfired"><span>${m.emoji}</span><span class="nm">${esc(m.name)}</span>
+      ${m.manual ? `<button class="small" style="margin-left:auto" onclick="fireMilestone('${m.id}');save()">It happened today</button>`
+        : `<span class="when">auto</span>`}</div>`;
+  }
+  h += '</div>';
+  document.getElementById('view-milestones').innerHTML = h;
+}
+
+/* ---------- SETTINGS ---------- */
+function renderSettings() {
+  let h = '';
+  // block schedule
+  h += `<div class="card"><h3>Brace block schedule</h3>
+    <div class="detail">From each date, extension is allowed to the angle shown. 0° = fully open. (Override — clinic's word wins.)</div>
+    <table class="block">${state.blockSchedule.map((r, i) =>
+      `<tr><td>${fmtDate(r.date)}</td><td>${r.deg}°</td>
+       <td><button class="ghost" onclick="delBlockRow(${i})">✕</button></td></tr>`).join('')}</table>
+    <div class="row" style="margin-top:6px">
+      <input type="date" id="nbDate"><input type="number" id="nbDeg" placeholder="°" min="0" max="90" style="max-width:70px">
+      <button class="small" onclick="addBlockRow()">Add</button></div>
+    <label class="check" style="margin-top:10px"><input type="checkbox" ${state.braceRetired ? 'checked' : ''}
+      onchange="state.braceRetired=this.checked;save()"><span>Brace retired (hides the allowance banner)</span></label></div>`;
+  // criteria overrides
+  h += `<div class="card"><h3>Entry criteria (Overrides)</h3>
+    <div class="detail">Edit or remove only on clinic/physio instruction — removal is deliberate friction, not a skip button.</div>`;
+  for (let p = 2; p <= 4; p++) {
+    h += `<div class="sub"><b>Phase ${p}</b></div>`;
+    for (const c of effectiveCriteria(state, p)) {
+      h += `<div class="row between" style="padding:3px 0"><span style="font-size:.82rem">${esc(c.text)}</span>
+        <span><button class="ghost" onclick="editCriterion('${c.id}')">edit</button>
+        <button class="ghost" onclick="removeCriterion('${c.id}')">remove</button></span></div>`;
+    }
+    h += `<button class="small" onclick="addCriterion(${p})">+ add criterion</button>`;
+  }
+  h += `</div>`;
+  // phase guides
+  h += `<div class="card"><h3>Phase guide dates</h3>${PROTOCOL.phases.map(ph =>
+    `<div class="row between" style="padding:3px 0"><span style="font-size:.82rem">P${ph.n}: ${esc(state.overrides.phaseGuide[ph.n] || ph.guide)}</span>
+     <button class="ghost" onclick="editGuide(${ph.n})">edit</button></div>`).join('')}</div>`;
+  // export / import
+  const days = state.lastExport ? dayDiff(state.lastExport, todayKey()) : null;
+  h += `<div class="card"><h3>Data</h3>
+    <div class="row" style="margin-top:8px">
+      <button class="primary" onclick="doExport()">Export JSON</button>
+      <button onclick="document.getElementById('impFile').click()">Import…</button>
+      <input type="file" id="impFile" accept=".json,application/json" style="display:none" onchange="doImport(this)"></div>
+    <div class="sub ${days != null && days > 30 ? 'amber' : ''}">
+      ${state.lastExport ? `Last export: ${days} day${days === 1 ? '' : 's'} ago.` : 'Never exported — localStorage is the only copy.'}
+      ${days != null && days > 30 ? ' Time for a backup.' : ''}</div>
+    <div class="sub">Phone is the canonical device; import <b>replaces</b> everything on this one.</div>
+    <div class="sub"><a href="${REPO_URL}" style="color:var(--accent)">Protocol &amp; source ↗</a> · protocol v${PROTOCOL.version}</div>
+    <details><summary>Danger zone</summary>
+      <button class="small" style="margin-top:8px;border-color:var(--bad)" onclick="wipeAll()">Reset all data</button></details></div>`;
+  document.getElementById('view-settings').innerHTML = h;
+}
+function delBlockRow(i) { state.blockSchedule.splice(i, 1); save(); }
+function addBlockRow() {
+  const d = document.getElementById('nbDate').value, g = document.getElementById('nbDeg').value;
+  if (!d || g === '') return;
+  state.blockSchedule.push({ date: d, deg: Number(g) });
+  state.blockSchedule.sort((a, b) => a.date < b.date ? -1 : 1);
+  save();
+}
+function editCriterion(id) {
+  const cur = effectiveCriteria(state, PROTOCOL.criteria.concat(state.overrides.criteria.added).find(c => c.id === id).phase)
+    .find(c => c.id === id);
+  const t = prompt('Criterion text:', cur.text);
+  if (t == null || !t.trim()) return;
+  const added = state.overrides.criteria.added.find(c => c.id === id);
+  if (added) added.text = t.trim(); else state.overrides.criteria.text[id] = t.trim();
+  save();
+}
+function removeCriterion(id) {
+  if (!confirm('Remove this criterion? Only do this on clinic/physio instruction.')) return;
+  if (state.overrides.criteria.added.some(c => c.id === id)) {
+    state.overrides.criteria.added = state.overrides.criteria.added.filter(c => c.id !== id);
+  } else state.overrides.criteria.removed.push(id);
+  state.criteria = state.criteria.filter(c => c.id !== id);
+  save();
+}
+function addCriterion(phase) {
+  const t = prompt('New criterion for Phase ' + phase + ':');
+  if (t == null || !t.trim()) return;
+  state.overrides.criteria.added.push({ id: 'c-custom-' + Date.now(), phase, text: t.trim() });
+  save();
+}
+function editGuide(n) {
+  const ph = PROTOCOL.phases[n];
+  const t = prompt('Guide dates for Phase ' + n + ':', state.overrides.phaseGuide[n] || ph.guide);
+  if (t == null || !t.trim()) return;
+  state.overrides.phaseGuide[n] = t.trim();
+  save();
+}
+function doExport() {
+  state.lastExport = todayKey();
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  const payload = exportPayload(state, new Date().toISOString());
+  const json = JSON.stringify(payload, null, 1);
+  const name = `elbow-${todayKey()}.json`;
+  const file = new File([json], name, { type: 'application/json' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: name }).catch(() => download(json, name));
+  } else download(json, name);
+  renderAll();
+}
+function download(text, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+function doImport(input) {
+  const f = input.files[0]; if (!f) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = () => {
+    let payload;
+    try { payload = JSON.parse(reader.result); } catch (e) { alert('Not valid JSON.'); return; }
+    if (!validImport(payload)) { alert('Not a recognisable elbow-recovery export.'); return; }
+    const inc = payload.state;
+    const maxDate = arr => arr.length ? arr.map(x => x.date).sort().pop() : 'never';
+    showModal(`<h3>Replace everything on this device?</h3>
+      <div class="sub">This device: <b>${state.ticks.length}</b> ticks, <b>${state.metrics.length}</b> metric days (latest ${maxDate(state.metrics)}).<br>
+      Import file: <b>${inc.ticks.length}</b> ticks, <b>${inc.metrics.length}</b> metric days (latest ${maxDate(inc.metrics)}), exported ${payload.exportedAt ? payload.exportedAt.slice(0, 10) : '?'}.</div>
+      <div class="sub"><b>Import replaces — it never merges.</b></div>
+      <div class="row"><button class="primary" onclick="confirmImport()">Replace</button>
+      <button onclick="closeModal()">Cancel</button></div>`);
+    window._pendingImport = inc;
+  };
+  reader.readAsText(f);
+}
+function confirmImport() {
+  state = Object.assign(defaultState(), window._pendingImport);
+  window._pendingImport = null;
+  closeModal();
+  save();
+}
+function wipeAll() {
+  if (!confirm('Delete ALL data on this device?')) return;
+  if (!confirm('Really? There is no undo. Export first.')) return;
+  state = defaultState();
+  save();
+}
+
+/* ---------- boot ---------- */
+function renderAll() {
+  renderHeader();
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.v === view));
+  if (view === 'today') renderToday();
+  if (view === 'phases') renderPhases();
+  if (view === 'trends') renderTrends();
+  if (view === 'milestones') renderMilestones();
+  if (view === 'settings') renderSettings();
+}
+renderAll();
+// re-render when returning to the app (day may have rolled over)
+document.addEventListener('visibilitychange', () => { if (!document.hidden) renderAll(); });
+</script>
+</body>
+</html>
