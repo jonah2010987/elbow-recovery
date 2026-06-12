@@ -331,8 +331,13 @@ function holdOn(state, dayKey) {
   const s = settleFor(state, dayKey);
   const reasons = [];
   if (s && s.settled === false) reasons.push('settle');
-  if (trendRising(state.metrics, 'pain', dayKey)) reasons.push('pain trend');
-  if (trendRising(state.metrics, 'stiffness', dayKey)) reasons.push('stiffness trend');
+  // Cast-off is a regime change: post-cast soreness is expected, not regression.
+  // Trend comparisons therefore never span the boundary — the EMA restarts there.
+  const trendMetrics = state.castOffDate
+    ? state.metrics.filter(mt => mt.date >= state.castOffDate)
+    : state.metrics;
+  if (trendRising(trendMetrics, 'pain', dayKey)) reasons.push('pain trend');
+  if (trendRising(trendMetrics, 'stiffness', dayKey)) reasons.push('stiffness trend');
   return reasons;
 }
 function holdInfo(state, dayKey) {

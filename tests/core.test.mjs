@@ -67,6 +67,20 @@ test('a single spike does not put the day on hold', () => {
   st2.metrics.push({ date: '2026-06-10', pain: 3, stiffness: 2 });
   assert.deepEqual([...C.holdOn(st2, '2026-06-10')], []);
 });
+test('expected soreness jump at cast-off does not trigger a hold', () => {
+  const st = C.defaultState();
+  st.castOffDate = '2026-06-19';
+  for (let i = 0; i < 7; i++) st.metrics.push({ date: C.addDays('2026-06-12', i), pain: 0, stiffness: 1 }); // calm in-cast week
+  for (let i = 0; i < 4; i++) st.metrics.push({ date: C.addDays('2026-06-19', i), pain: 3, stiffness: 4 }); // post-cast soreness
+  assert.deepEqual([...C.holdOn(st, '2026-06-22')], [], 'jump across the boundary is expected, not regression');
+});
+test('a genuine climb after cast-off still triggers a hold', () => {
+  const st = C.defaultState();
+  st.castOffDate = '2026-06-19';
+  for (let i = 0; i < 12; i++) st.metrics.push({ date: C.addDays('2026-06-19', i), pain: Math.min(8, 2 + i * 0.7), stiffness: 2 });
+  const reasons = [...C.holdOn(st, '2026-06-30')];
+  assert.ok(reasons.includes('pain trend'), 'rising post-cast trend holds: ' + reasons);
+});
 test('settle=no holds that day only', () => {
   const st = C.defaultState();
   st.settle.push({ date: '2026-06-10', settled: false });

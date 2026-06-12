@@ -29,7 +29,7 @@ The current prescription for a loading Item (resistance, sets × reps, progressi
 _Avoid_: load, weight, level
 
 **Hold**:
-A day-state in which Progress actions are disabled and "repeat the same load" is shown, while ticking at the current Dose remains available. Entered when the morning settle prompt is answered "no" (lasts that day) or when a pain/stiffness trend is rising (persists until the trend clears). After 5 consecutive Hold days the app suggests stepping back a Phase but never does it automatically. Hold means repeat, not rest.
+A day-state in which Progress actions are disabled and "repeat the same load" is shown, while ticking at the current Dose remains available. Entered when the morning settle prompt is answered "no" (lasts that day) or when a pain/stiffness trend is rising (persists until the trend clears). Trend comparisons never span the cast-off boundary: post-cast soreness is expected physiology, not regression. After 5 consecutive Hold days the app suggests stepping back a Phase but never does it automatically. Hold means repeat, not rest.
 _Avoid_: rest day, deload
 
 **Lifespan**:
