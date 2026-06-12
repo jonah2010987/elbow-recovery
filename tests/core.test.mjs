@@ -246,6 +246,17 @@ test('every retire.criterion and milestone binding points at something real', ()
     if (kind === 'tick') assert.ok(itemIds.has(ref), m.id);
   }
 });
+test('every exercise entry has a name and a real how-to', () => {
+  for (const it of C.PROTOCOL.items) {
+    for (const ex of it.exercises || []) {
+      assert.ok(ex.name && ex.name.length > 2, it.id);
+      assert.ok(ex.how && ex.how.length > 40, `${it.id}: "${ex.name}" how-to too thin`);
+    }
+  }
+  // every exercise-bearing item: all but the three one-off clinic questions
+  const bare = C.PROTOCOL.items.filter(i => !i.exercises && !i.id.startsWith('p0-clinic'));
+  assert.deepEqual([...bare.map(i => i.id)], []);
+});
 test('export payload round-trips validation', () => {
   const st = C.defaultState();
   const p = C.exportPayload(st, '2026-06-12T10:00:00Z');

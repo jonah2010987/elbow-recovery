@@ -203,6 +203,10 @@ const PROTOCOL = {
   items: [
     { id: 'p0-grip', phase: 0, name: 'Grip & wrist work (in cast)', cadence: 'tally', target: 2, max: 4,
       detail: 'Hard isometric grip (ball/putty) and finger/wrist motion as the cast allows. Elbow stays put.',
+      exercises: [
+        { name: 'Ball / putty squeezes', how: 'Squeeze a stress ball or putty hard for ~5 s, relax 5 s, ×10. You already tolerate hard isometric grip — load it normally. The cast keeps the elbow safe; effort comes from the hand only.' },
+        { name: 'Finger spreads & wiggles', how: 'Spread the fingers wide against gentle resistance (a band or the other hand) and move whatever the cast leaves free. Keeps the hand from stiffening alongside the elbow.' },
+      ],
       retire: { phase: 1 } },
     { id: 'p0-clinic-brace', phase: 0, name: 'Clinic: precautionary or instability?', cadence: 'once',
       detail: 'Ask at the 19 Jun visit: "Is the brace precautionary, or did you find instability?" The answer sets how cautious Phase 2 must be.',
@@ -214,38 +218,92 @@ const PROTOCOL = {
       detail: 'Confirm there is no documented gross instability before Phase 2 loading.',
       retire: { phase: 1 } },
     { id: 'p1-rom', phase: 1, name: 'ROM session', cadence: 'tally', target: 4, max: 6,
-      detail: 'Little and often. Supine overhead flexion/extension ×10–15 (upper arm vertical, pronated) · overhead pronation/supination ×10–15 · dependent-position AROM to the brace block, pronated, active only. No partner stretching, no pushing with the other hand.',
+      detail: 'Little and often beats one long session. Active only — no partner stretching, no pushing with the other hand.',
+      exercises: [
+        { name: 'Overhead flexion/extension', how: 'Lie on your back, shoulder bent to 90° so the upper arm points straight at the ceiling (steady it with the other hand if useful), palm facing away (pronated). Slowly bend the elbow to bring the hand toward your shoulder, then straighten toward the ceiling. 10–15 slow reps. Overhead, gravity presses the joint together and stabilises it — this is the most protected place to chase motion, so range is limited by pain only.' },
+        { name: 'Overhead pronation/supination', how: 'Same position, elbow bent to 90°. Slowly rotate the forearm so the palm faces you, then away. 10–15 reps. Keep the upper arm vertical; the rotation comes from the forearm, not the shoulder.' },
+        { name: 'Dependent-position extension', how: 'Sit with the upper arm supported on a table, forearm hanging, palm down (pronated). Actively straighten as far as the brace block allows, pause a breath, return. 10–15 reps. Active only: no weight in the hand, no pressing with the other hand, no bouncing at the end.' },
+      ],
       retire: { criterion: 'c-p3-ext10' } },
     { id: 'p1-iso', phase: 1, name: 'Isometrics', cadence: 'daily', timer: 'iso',
-      detail: 'Biceps 5×10 s at ~50–70% (wrist up into other hand) · triceps 5×10 s (wrist down into table) · shoulder all directions, elbow supported.',
+      detail: 'Muscle wakes up without the joint moving. ~50–70% effort — firm, not maximal.',
+      exercises: [
+        { name: 'Biceps isometric', how: 'Elbow bent to 90° at your side. Press the wrist UP into your other hand, which doesn’t let it move. 5 × 10 s, ~50–70% effort, easy breathing — use the 5×10 timer.' },
+        { name: 'Triceps isometric', how: 'Same position. Press the wrist DOWN into the other hand or a tabletop, no movement. 5 × 10 s at the same effort.' },
+        { name: 'Shoulder isometrics', how: 'Elbow supported at your side: push the hand gently into a wall forwards, backwards, outwards and inwards, 5–10 s each, without anything moving. Keeps the shoulder from going to sleep during the elbow’s month off.' },
+      ],
       retire: { phase: 2 } },
     { id: 'p1-wrist', phase: 1, name: 'Wrist & grip', cadence: 'daily',
-      detail: 'Wrist AROM, putty/ball grip, banded finger extensions. Elbow at 90° by your side.',
+      detail: 'Grip loads normally as long as the elbow stays bent at 90° by your side.',
+      exercises: [
+        { name: 'Wrist circles & lifts', how: 'Forearm supported on a table, hand off the edge, palm down: lift the hand up and down through comfortable range, ×15, then slow circles both ways.' },
+        { name: 'Putty / ball grip', how: 'Hard squeezes, 5 s on / 5 s off, ×10. Climber’s grip strength preserves surprisingly well if you keep asking for it.' },
+        { name: 'Banded finger extensions', how: 'Band around all five fingertips; spread/open the hand against it, ×15. The antagonists matter as much as the grip.' },
+      ],
       retire: { phase: 2 } },
     { id: 'p2-llld', phase: 2, name: 'Long-duration extension hold', cadence: 'tally', target: 2, max: 3, timer: 'countdown',
-      detail: 'Only once the brace block is fully open and a deficit persists. Arm supported on a bench, 0.5–1 kg cuff at the wrist, 3–5 min at comfortable end range. This — not ballistic stretching — is how extension comes back.',
+      detail: 'Only once the brace block is fully open and a deficit persists. Low load, long duration — this, not ballistic stretching, is how extension comes back.',
+      exercises: [
+        { name: 'Cuff-weight hold', how: 'Sit or lie with the upper arm fully supported on a bench so only the forearm is unsupported. Strap 0.5–1 kg at the wrist, let the arm settle into comfortable end-range extension, and stay there 3–5 min (use the countdown). The sensation is a mild, releasing stretch — never sharp. If the muscles are fighting the weight, it’s too heavy or too far.' },
+      ],
       retire: { criterion: 'c-p3-ext10' } },
     { id: 'p2-voltra', phase: 2, name: 'Voltra session (light menu)', cadence: 'weekly', target: 3, loading: true,
       dose: 'lowest meaningful resistance, 3×15–20',
-      detail: 'Mid-range, elbow tucked: neutral-grip cable curl · pushdown · seated row (elbows close) · wrist curls + reverse · pronation/supination hammer-style ×10 slow. Add band external rotation + serratus wall slides.',
+      detail: 'Everything mid-range (~30–120° of bend), elbow tucked to your side, forearm neutral or pronated. Pain ≤3/10 during, settled by morning.',
+      exercises: [
+        { name: 'Cable curl, neutral grip', how: 'Thumb-up grip, elbow pinned to your ribs. Curl through the middle of the range — stop well short of straight at the bottom. 3 × 15–20 at the lowest resistance that feels like anything.' },
+        { name: 'Triceps pushdown', how: 'Elbow pinned to your side, press down and stop ~30° short of fully straight. 3 × 15–20. The tucked elbow keeps the load out of varus/valgus.' },
+        { name: 'Seated row', how: 'Elbows tracking close past the ribs, squeeze the shoulder blades. 3 × 15. Wide flaring elbows are what to avoid.' },
+        { name: 'Wrist curls + reverse wrist curls', how: 'Forearm on a bench, hand off the edge: curl the wrist up ×15–20, then flip palm-down for reverse curls ×15–20, 3 sets each. Light — these feed the common flexor/extensor origins.' },
+        { name: 'Pronation/supination with a handle', how: 'Hold the Voltra handle (or a hammer/heavy spanner) hammer-style, elbow at 90° tucked: slowly rotate palm-up then palm-down, 3 × 10 each way. Slow is the point.' },
+        { name: 'Band external rotation + serratus wall slides', how: 'Band ER: elbow tucked at 90°, rotate the hand outward ×15. Wall slides: forearms on the wall, slide up while pushing the wall away ×10. The shoulder has been idle a month and will matter on the wall.' },
+      ],
       retire: { phase: 3 } },
     { id: 'p3-strength', phase: 3, name: 'Strength session', cadence: 'weekly', target: 3, loading: true,
       dose: '3×15, clean top of range',
-      detail: 'Curls, pushdowns, rows: 3×15 → 4×8–10, add load when the top of the range is clean. ~Week 8+: eccentric overload 110–120% on curls/pushdowns. Kneeling lat pulldown before any pull-ups. Pressing: incline push-ups on rack rails, hands walking lower weekly toward the floor.',
+      detail: 'The Phase 2 menu grows teeth: heavier, lower reps, eccentric work from ~week 8.',
+      exercises: [
+        { name: 'Curls / pushdowns / rows progression', how: 'Same movements as Phase 2, progressing 3×15 → 4×8–10. Add load only when the top of the range is clean — grinding, shifting reps mean stay. Update the Dose when you progress.' },
+        { name: 'Eccentric overload (~week 8+)', how: 'Voltra eccentric mode on curls and pushdowns at 110–120% — modest, not max. Lower slowly (3–4 s), let the machine help up. Eccentrics are the stimulus the ligament and tendon origins need, but they bite the NEXT day, so judge by tomorrow morning, not by how the set felt.' },
+        { name: 'Kneeling lat pulldown', how: 'Voltra high anchor, kneeling: pull to the collarbone with elbows tracking down, not flaring. This rebuilds the pulling pattern before any pull-up is attempted.' },
+        { name: 'Pressing progression', how: 'Incline push-ups with hands on the rack rails. Each week, set the hands one notch lower toward the floor. Pressing mirrors the injury mechanism (straight arm + axial load), so it is deliberately the slowest line — pain-free floor push-ups are a Phase 4 gate, not a race.' },
+      ],
       retire: { phase: 4 } },
     { id: 'p3-cc', phase: 3, name: 'Closed-chain & proprioception', cadence: 'weekly', target: 3,
-      detail: 'Quadruped weight shifts → good-arm lifts → slow shoulder taps · wall push-up holds with perturbation · ball dribbles vs wall 30–60 s · bear crawls from ~week 8.',
+      detail: 'Weight through the hand re-teaches the joint where it is — the part generic rehab sheets skip and climbers need most.',
+      exercises: [
+        { name: 'Quadruped progression', how: 'On all fours, hands under shoulders: rock weight slowly side-to-side and forward-back. When easy, lift the GOOD arm so the healing side carries more. Then slow shoulder taps — touch the opposite shoulder without the hips swaying.' },
+        { name: 'Wall push-up hold + perturbation', how: 'Hold a half-bent wall push-up position and make small rapid oscillations — self-generated shakes, or a partner nudging the shoulders unpredictably. 3 × 20–30 s. The wobble is the exercise.' },
+        { name: 'Ball dribbles', how: 'Dribble a ball against the wall at shoulder height, 30–60 s sets. Rapid, low-load joint positioning practice.' },
+        { name: 'Bear crawl (~week 8+)', how: 'Knees an inch off the floor, crawl slowly forward and back a few metres. Start with static holds if crawling feels sketchy.' },
+      ],
       retire: { phase: 4 } },
     { id: 'p3-hang', phase: 3, name: 'Hanging progression', cadence: 'weekly', target: 2, loading: true,
       dose: 'feet on floor, ~30–50% BW, arms slightly bent',
-      detail: 'Progress knee-bend depth → 70–80% BW → full bodyweight on jugs, slight bend, build to 3×20 s pain-free. That is the ticket to the wall. No one-arm, no campus, no max hangs.',
+      detail: 'The gateway to climbing. Jugs or a bar, elbows always slightly bent. No one-arm, no campus, no max hangs.',
+      exercises: [
+        { name: 'Stage 1 — feet-on-floor hangs (wk 7–8)', how: 'Bar or jug low enough that feet stay planted; sink maybe 30–50% of bodyweight into the arms, elbows soft. 3 × 10–20 s.' },
+        { name: 'Stage 2 — deeper knee bend (wk 8–9)', how: 'Same setup, bend the knees so the arms take 70–80% of bodyweight. Build the time before the depth.' },
+        { name: 'Stage 3 — full bodyweight (wk 9–10)', how: 'Two-arm hang on jugs, slight elbow bend, feet free. Build to 3 × 20 s pain-free — that exact number is a Phase 4 entry criterion, so tick it there when it’s real.' },
+      ],
       retire: { phase: 4 } },
     { id: 'p4-wall', phase: 4, name: 'Wall session', cadence: 'weekly', target: 2, loading: true,
       dose: 'vertical/slab, jugs, 3–4 grades below warm-up, static, top-rope/autobelay',
-      detail: 'Lock off and reach — no dynos, deadpoints, or cutting loose. Down-climb everything. Open-hand over crimp; good footholds; short sessions. Weeks 12–14: gentle overhang, two-handed catches before one-arm.',
+      detail: 'Two short sessions a week. The session rules ARE the exercise:',
+      exercises: [
+        { name: 'Movement rules (weeks 10–12)', how: 'Static only: lock off and reach. No dynos, no deadpoints, no cutting loose. Vertical or slab on jugs, 3–4 grades below your normal warm-up. Down-climb everything — dropping onto a mat with an outstretched arm is the exact mechanism that caused this.' },
+        { name: 'Hold rules (protect the fingers too)', how: 'Open-hand/drag over crimp, big holds, good footholds, short sessions. A month of disuse deconditions pulleys faster than muscle — isometric grip feeling fine does not mean A2-ready. Sharp localised pain at the base of a finger is its own stop signal.' },
+        { name: 'Terrain to avoid early', how: 'Gastons and wide compression (varus/valgus), mantles and palm-down press-outs (loaded extension), steep roofs (peak elbow loads), laybacks on the injured side. Top-rope or autobelay beats bouldering the first 2–3 weeks purely on fall exposure.' },
+        { name: 'Weeks 12–14 — rebuilding', how: 'Add gentle overhang and slightly more dynamic moves: two-handed catches before one-arm catches. Practise deliberate low, soft, tucked-arm falls before an unexpected one finds you. Max dynamic moves and campusing: earliest ~week 16.' },
+      ],
       retire: null },
     { id: 'p4-antagonist', phase: 4, name: 'Antagonist & elbow work', cadence: 'weekly', target: 2,
-      detail: 'Pressing, reverse wrist curls, pronation/supination. Keep for ≥6 months — the ligament remodels for about a year.',
+      detail: 'Insurance for the comeback. Keep for ≥6 months — the ligament remodels for about a year.',
+      exercises: [
+        { name: 'Pressing', how: 'Push-ups or light dumbbell press, 2–3 × 10–15. The push muscles balance a climber’s pull-dominated loading.' },
+        { name: 'Reverse wrist curls', how: 'Palm down over a bench, curl the knuckles up, 3 × 15. The extensor origin is the classic climber’s elbow weak point.' },
+        { name: 'Pronation/supination', how: 'Hammer-style rotations, slow, 2 × 10 each way. Keeps the forearm rotators honest alongside all the gripping.' },
+      ],
       retire: null },
   ],
   criteria: [
@@ -766,7 +824,12 @@ function itemCard(it, day, canProgress) {
     <button class="small" onclick="startCountdown('${it.id}',240)">4</button>
     <button class="small" onclick="startCountdown('${it.id}',300)">5</button><span class="disp" id="tm-${it.id}"></span></div>`;
 
-  return `<div class="card"><h3>${esc(it.name)}</h3><div class="detail">${esc(it.detail)}</div>${dose}${body}${timer}</div>`;
+  let howTo = '';
+  if (it.exercises && it.exercises.length) {
+    howTo = `<details><summary>How to — ${it.exercises.length} exercise${it.exercises.length > 1 ? 's' : ''}</summary>
+      ${it.exercises.map(ex => `<div class="sub"><b>${esc(ex.name)}.</b> ${esc(ex.how)}</div>`).join('')}</details>`;
+  }
+  return `<div class="card"><h3>${esc(it.name)}</h3><div class="detail">${esc(it.detail)}</div>${howTo}${dose}${body}${timer}</div>`;
 }
 
 function mutateTick(itemId, fn) {
@@ -878,7 +941,8 @@ function renderPhases() {
     const items = PROTOCOL.items.filter(i => i.phase === ph.n);
     if (items.length && ph.n > 0) {
       inner += `<details><summary>Items in this phase (${items.length})</summary>
-        ${items.map(i => `<div class="sub"><b>${esc(i.name)}</b> — ${esc(i.detail)}</div>`).join('')}</details>`;
+        ${items.map(i => `<div class="sub"><b>${esc(i.name)}</b> — ${esc(i.detail)}${
+          (i.exercises || []).map(ex => `<br>· <b>${esc(ex.name)}.</b> ${esc(ex.how)}`).join('')}</div>`).join('')}</details>`;
     }
     inner += `<details><summary>Phase notes</summary><ul class="notes">${ph.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></details>`;
 
