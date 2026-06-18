@@ -38,7 +38,6 @@
   .banner { border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; font-size: .85rem; line-height: 1.4; }
   .banner.flag { background: #3a1d1d; border: 1px solid var(--bad); }
   .banner.hold { background: #332a1c; border: 1px solid var(--hold); }
-  .banner.brace { background: #1c2c42; border: 1px solid #2c4a73; }
   .banner.info { background: var(--card); border: 1px solid var(--line); color: var(--dim); }
   .banner button { margin-top: 8px; }
   button {
@@ -87,8 +86,6 @@
     font: inherit; background: var(--card2); color: var(--text);
     border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; max-width: 160px;
   }
-  table.block { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: .85rem; }
-  table.block td { padding: 4px 6px 4px 0; }
   .overlay {
     position: fixed; inset: 0; background: rgba(5,8,12,.88); z-index: 50;
     display: none; align-items: center; justify-content: center; padding: 20px;
@@ -174,7 +171,7 @@ const PROTOCOL = {
     { n: 1, name: 'Restore Motion', guide: '~19 Jun – 3 Jul (weeks 2–4)',
       notes: [
         'Stiffness, not re-dislocation, is the main enemy. Active motion only — never forced passive stretching (it drives HO).',
-        'Avoid (brace off): carrying with the arm hanging in extension; reaching out sideways unsupported; passive/partner stretching into extension; any varus/valgus load; supinated loaded extension.',
+        'Avoid: carrying with the arm hanging in extension; reaching out sideways unsupported; passive/partner stretching into extension; any varus/valgus load; supinated loaded extension.',
         'Expect the last 20–30° of extension to lag for weeks. Normal. Do not chase it passively.',
         'Red flags → contact fracture clinic: pain rising WITH ROM falling week on week (HO screen); clunking/giving way; ring/little finger tingling.',
       ] },
@@ -182,7 +179,6 @@ const PROTOCOL = {
       notes: [
         'All loading mid-range (~30–120° flexion), elbow tucked, forearm neutral or pronated.',
         'Pain rule: ≤3/10 during, settled by next morning. A next-day flare means repeat the same load, not progress.',
-        'If braced and the clinic agrees, this menu can start ~1 week early, performed in the brace.',
       ] },
     { n: 3, name: 'Progressive Strength', guide: '~17 Jul – 14 Aug (weeks 6–10)',
       notes: [
@@ -208,21 +204,15 @@ const PROTOCOL = {
         { name: 'Finger spreads & wiggles', how: 'Spread the fingers wide against gentle resistance (a band or the other hand) and move whatever the cast leaves free. Keeps the hand from stiffening alongside the elbow.' },
       ],
       retire: { phase: 1 } },
-    { id: 'p0-clinic-brace', phase: 0, name: 'Clinic: precautionary or instability?', cadence: 'once',
-      detail: 'Ask at the 19 Jun visit: "Is the brace precautionary, or did you find instability?" The answer sets how cautious Phase 2 must be.',
-      retire: { phase: 1 } },
-    { id: 'p0-clinic-block', phase: 0, name: 'Clinic: get the block schedule', cadence: 'once',
-      detail: '"What is my extension block schedule?" Their schedule overrides the generic one. Enter it when marking cast-off.',
-      retire: { phase: 1 } },
     { id: 'p0-clinic-stability', phase: 0, name: 'Clinic: was stability graded?', cadence: 'once',
       detail: 'Confirm there is no documented gross instability before Phase 2 loading.',
       retire: { phase: 1 } },
     { id: 'p1-rom', phase: 1, name: 'ROM session', cadence: 'tally', target: 4, max: 6,
-      detail: 'Little and often beats one long session. Active only — no partner stretching, no pushing with the other hand.',
+      detail: 'Little and often beats one long session. Active only — no partner stretching, no pushing with the other hand. Right now your extension work is the overhead drill; unbraced, dependent-position extension starts around week 3–4 (early July).',
       exercises: [
         { name: 'Overhead flexion/extension', how: 'Lie on your back, shoulder bent to 90° so the upper arm points straight at the ceiling (steady it with the other hand if useful), palm facing away (pronated). Slowly bend the elbow to bring the hand toward your shoulder, then straighten toward the ceiling. 10–15 slow reps. Overhead, gravity presses the joint together and stabilises it — this is the most protected place to chase motion, so range is limited by pain only.' },
         { name: 'Overhead pronation/supination', how: 'Same position, elbow bent to 90°. Slowly rotate the forearm so the palm faces you, then away. 10–15 reps. Keep the upper arm vertical; the rotation comes from the forearm, not the shoulder.' },
-        { name: 'Dependent-position extension', how: 'Sit with the upper arm supported on a table, forearm hanging, palm down (pronated). Actively straighten as far as the brace block allows, pause a breath, return. 10–15 reps. Active only: no weight in the hand, no pressing with the other hand, no bouncing at the end.' },
+        { name: 'Dependent-position extension', how: 'Starts ~week 3–4 (early July) — unbraced, earlier than that this position loads the healing ligament, so use the overhead drill for extension until then. From then: sit with the upper arm supported on a table, forearm hanging, palm down (pronated). Actively straighten as far as comfortable, pause a breath, return. 10–15 reps. Active only: no weight in the hand, no pressing with the other hand, no bouncing at the end.' },
       ],
       retire: { criterion: 'c-p3-ext10' } },
     { id: 'p1-iso', phase: 1, name: 'Isometrics', cadence: 'daily', timer: 'iso',
@@ -242,7 +232,7 @@ const PROTOCOL = {
       ],
       retire: { phase: 2 } },
     { id: 'p2-llld', phase: 2, name: 'Long-duration extension hold', cadence: 'tally', target: 2, max: 3, timer: 'countdown',
-      detail: 'Only once the brace block is fully open and a deficit persists. Low load, long duration — this, not ballistic stretching, is how extension comes back.',
+      detail: 'Only from Phase 2 (≈ week 5–6) once a deficit persists. Low load, long duration — this, not ballistic stretching, is how extension comes back.',
       exercises: [
         { name: 'Cuff-weight hold', how: 'Sit or lie with the upper arm fully supported on a bench so only the forearm is unsupported. Strap 0.5–1 kg at the wrist, let the arm settle into comfortable end-range extension, and stay there 3–5 min (use the countdown). The sensation is a mild, releasing stretch — never sharp. If the muscles are fighting the weight, it’s too heavy or too far.' },
       ],
@@ -339,14 +329,12 @@ function defaultState() {
   return {
     schemaVersion: 1,
     castOffDate: null,
-    braceRetired: false,
     ticks: [],        // {date, itemId, count, dose?}
     metrics: [],      // {date, stiffness, pain, backfill?}
     extension: [],    // {date, deg}
     settle: [],       // {date, settled}
     criteria: [],     // {id, date}
     doseHistory: [],  // {date, itemId, dose}
-    blockSchedule: [],// {date, deg}
     redFlags: [],     // {date(weekKey), rom, clunk, ulnar}
     clinicContacted: [], // {date}
     milestones: [],   // {id, date}
@@ -410,9 +398,8 @@ function holdOn(state, dayKey) {
   if (s && s.settled === false) reasons.push('settle');
   // Cast-off is a regime change: post-cast soreness is expected, not regression.
   // Trend comparisons therefore never span the boundary — the EMA restarts there.
-  // Brace block openings deliberately do NOT reset the trend: same regime, and
-  // weekly resets would disarm the HO stiffness screen in its highest-risk weeks.
-  // A bump-triggered Hold gives sound advice anyway; the banner explains it instead.
+  // Nothing else resets the trend: periodic resets would disarm the HO stiffness
+  // screen in its highest-risk weeks.
   const trendMetrics = state.castOffDate
     ? state.metrics.filter(mt => mt.date >= state.castOffDate)
     : state.metrics;
@@ -482,7 +469,7 @@ function hadLoadingTick(state, dayKey) {
   });
 }
 
-/* ---- streak, flags, brace ---- */
+/* ---- streak, flags ---- */
 function streak(state, dayKey) {
   const sameDay = k => state.metrics.some(m => m.date === k && !m.backfill);
   let d = dayKey;
@@ -503,17 +490,6 @@ function redFlagDueThisWeek(state, dayKey) {
   const wk = weekKeyOf(dayKey);
   return !state.redFlags.some(f => f.date === wk);
 }
-function currentBlock(state, dayKey) {
-  const rows = [...state.blockSchedule].sort((a, b) => a.date < b.date ? -1 : 1);
-  let v = null;
-  for (const r of rows) { if (r.date <= dayKey) v = r; }
-  return v;
-}
-function recentBlockChange(state, dayKey, withinDays) {
-  const w = withinDays == null ? 5 : withinDays;
-  const cur = currentBlock(state, dayKey);
-  return cur && cur.date >= addDays(dayKey, -w) ? cur : null;
-}
 
 /* ---- journey progress (fill is criteria/milestone-driven, never date-driven) ---- */
 const JOURNEY_WEIGHTS = [2, 2, 2, 4, 4]; // guide weeks per phase: widths only, not fill
@@ -522,7 +498,7 @@ function journeyProgress(state) {
   const segments = [0, 0, 0, 0, 0];
   for (let p = 0; p < cur; p++) segments[p] = 1;
   if (cur === 0) {
-    const clinic = ['p0-clinic-brace', 'p0-clinic-block', 'p0-clinic-stability'];
+    const clinic = ['p0-clinic-stability'];
     segments[0] = clinic.filter(id => everTicked(state, id)).length / clinic.length;
   } else if (cur < 4) {
     const crits = effectiveCriteria(state, cur + 1);
@@ -547,7 +523,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = { PROTOCOL, defaultState, todayKey, addDays, dayOfWeek, weekKeyOf, emaSeries, emaAt,
     trendRising, holdOn, holdInfo, effectiveCriteria, critTicked, currentPhase, itemRetired, activeItems,
     tickFor, weekCount, everTicked, currentDose, hadLoadingTick, streak, flagBannerActive,
-    redFlagDueThisWeek, currentBlock, recentBlockChange, journeyProgress, exportPayload, validImport, metricsFor, settleFor };
+    redFlagDueThisWeek, journeyProgress, exportPayload, validImport, metricsFor, settleFor };
 }
 </script>
 
@@ -670,21 +646,14 @@ function renderToday() {
   h += backfillCards(day);
 
   if (hold.hold && m) {
-    const isTrend = hold.reasons.some(r => r.includes('trend'));
-    const blkChange = !state.braceRetired && isTrend ? recentBlockChange(state, day) : null;
     h += `<div class="banner hold"><b>⏸ Hold — repeat the same load, don't progress.</b><br>
       Reason: ${hold.reasons.join(' + ')}. Ticking at the current dose stays on.${
-      blkChange ? `<br>The brace block opened to ${blkChange.deg}° on ${fmtDate(blkChange.date)} — a short-lived bump after gaining new range is normal. The Hold clears when the trend settles.` : ''}${
       hold.consecutive >= HOLD_STEPBACK_DAYS ? `<br><b class="amber">${hold.consecutive} days on hold — consider stepping back a phase. Talk to your physio.</b>` : ''}</div>`;
   }
   if (!m) h += `<div class="banner info">Day unassessed — answer the morning prompt to enable Progress. Ticking is open.</div>`;
 
-  if (state.castOffDate && !state.braceRetired) {
-    const blk = currentBlock(state, day);
-    if (blk) h += `<div class="banner brace">🦾 Brace: extension blocked at <b>${blk.deg}°</b>${blk.deg === 0 ? ' (fully open)' : ''}. Work freely inside the arc — don't fight the stop.</div>`;
-  }
   if (!state.castOffDate) {
-    h += `<div class="banner brace">🩹 In cast. Mark cast-off on the Phases tab when the brace is fitted (~19 Jun) — have the block schedule ready to enter.</div>`;
+    h += `<div class="banner info">🩹 In cast. Mark cast-off on the Phases tab when the cast comes off.</div>`;
   }
 
   // weekly extension measurement nudge (Phase 1+)
@@ -922,7 +891,7 @@ function renderPhases() {
     let inner = '';
 
     if (ph.n === 0 && !state.castOffDate) {
-      inner += `<button class="primary" style="margin-top:8px" onclick="castOffModal()">Cast off — brace fitted →</button>`;
+      inner += `<button class="primary" style="margin-top:8px" onclick="castOffModal()">Cast off →</button>`;
     }
     if (ph.n >= 2) {
       const crits = effectiveCriteria(state, ph.n);
@@ -964,36 +933,17 @@ function toggleCriterion(id, on) {
   save();
 }
 function castOffModal() {
-  showModal(`<h3>Cast off — brace fitted</h3>
-    <div class="sub">Enter the clinic's block schedule: from each date, the brace allows extension to the angle shown (0° = fully open). Edit later in Settings.</div>
+  showModal(`<h3>Cast off</h3>
+    <div class="sub">Record the day the cast came off — this starts Phase 1.</div>
     <div class="row">Cast-off date: <input type="date" id="coDate" value="${todayKey()}"></div>
-    <table class="block" id="coRows"></table>
-    <button class="small" onclick="addCoRow()">+ add row</button>
     <div class="row" style="margin-top:14px">
       <button class="primary" onclick="confirmCastOff()">Start Phase 1</button>
       <button onclick="closeModal()">Cancel</button></div>`);
-  coRowCount = 0;
-  addCoRow(todayKey(), 30); addCoRow(addDays(todayKey(), 7), 20);
-  addCoRow(addDays(todayKey(), 14), 10); addCoRow(addDays(todayKey(), 21), 0);
-}
-let coRowCount = 0;
-function addCoRow(date, deg) {
-  const i = coRowCount++;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `<td><input type="date" id="coD${i}" value="${date || ''}"></td>
-    <td><input type="number" id="coG${i}" value="${deg != null ? deg : ''}" min="0" max="90" inputmode="numeric" style="max-width:70px"> °</td>`;
-  document.getElementById('coRows').appendChild(tr);
 }
 function confirmCastOff() {
   const date = document.getElementById('coDate').value;
   if (!date) return;
-  const rows = [];
-  for (let i = 0; i < coRowCount; i++) {
-    const d = document.getElementById('coD' + i), g = document.getElementById('coG' + i);
-    if (d && d.value && g && g.value !== '') rows.push({ date: d.value, deg: Number(g.value) });
-  }
   state.castOffDate = date;
-  state.blockSchedule = rows;
   closeModal();
   fireMilestone('m-phase1');
   save();
@@ -1084,17 +1034,6 @@ function renderMilestones() {
 /* ---------- SETTINGS ---------- */
 function renderSettings() {
   let h = '';
-  // block schedule
-  h += `<div class="card"><h3>Brace block schedule</h3>
-    <div class="detail">From each date, extension is allowed to the angle shown. 0° = fully open. (Override — clinic's word wins.)</div>
-    <table class="block">${state.blockSchedule.map((r, i) =>
-      `<tr><td>${fmtDate(r.date)}</td><td>${r.deg}°</td>
-       <td><button class="ghost" onclick="delBlockRow(${i})">✕</button></td></tr>`).join('')}</table>
-    <div class="row" style="margin-top:6px">
-      <input type="date" id="nbDate"><input type="number" id="nbDeg" placeholder="°" min="0" max="90" style="max-width:70px">
-      <button class="small" onclick="addBlockRow()">Add</button></div>
-    <label class="check" style="margin-top:10px"><input type="checkbox" ${state.braceRetired ? 'checked' : ''}
-      onchange="state.braceRetired=this.checked;save()"><span>Brace retired (hides the allowance banner)</span></label></div>`;
   // criteria overrides
   h += `<div class="card"><h3>Entry criteria (Overrides)</h3>
     <div class="detail">Edit or remove only on clinic/physio instruction — removal is deliberate friction, not a skip button.</div>`;
@@ -1127,14 +1066,6 @@ function renderSettings() {
     <details><summary>Danger zone</summary>
       <button class="small" style="margin-top:8px;border-color:var(--bad)" onclick="wipeAll()">Reset all data</button></details></div>`;
   document.getElementById('view-settings').innerHTML = h;
-}
-function delBlockRow(i) { state.blockSchedule.splice(i, 1); save(); }
-function addBlockRow() {
-  const d = document.getElementById('nbDate').value, g = document.getElementById('nbDeg').value;
-  if (!d || g === '') return;
-  state.blockSchedule.push({ date: d, deg: Number(g) });
-  state.blockSchedule.sort((a, b) => a.date < b.date ? -1 : 1);
-  save();
 }
 function editCriterion(id) {
   const cur = effectiveCriteria(state, PROTOCOL.criteria.concat(state.overrides.criteria.added).find(c => c.id === id).phase)

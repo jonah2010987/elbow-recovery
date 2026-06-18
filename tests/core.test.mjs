@@ -143,7 +143,7 @@ test('ROM and LLLD retire when the extension criterion ticks', () => {
   assert.ok(!ids.includes('p2-llld'));
 });
 
-// ---- weekly quota, streak, flags, block ----
+// ---- weekly quota, streak, flags ----
 test('weekCount counts this week only', () => {
   const st = C.defaultState();
   st.ticks.push({ date: '2026-06-08', itemId: 'p2-voltra', count: 1 }); // Mon
@@ -173,37 +173,13 @@ test('all-no red-flag answers never raise the banner', () => {
   st.redFlags.push({ date: '2026-06-08', rom: false, clunk: false, ulnar: false });
   assert.equal(C.flagBannerActive(st), false);
 });
-test('currentBlock picks the latest row on/before today', () => {
-  const st = C.defaultState();
-  st.blockSchedule = [{ date: '2026-06-19', deg: 30 }, { date: '2026-06-26', deg: 20 }, { date: '2026-07-03', deg: 10 }];
-  assert.equal(C.currentBlock(st, '2026-06-25').deg, 30);
-  assert.equal(C.currentBlock(st, '2026-06-26').deg, 20);
-  assert.equal(C.currentBlock(st, '2026-06-18'), null);
-});
-
-test('recentBlockChange: row within 5 days, null when older or empty', () => {
-  const st = C.defaultState();
-  assert.equal(C.recentBlockChange(st, '2026-06-28'), null);
-  st.blockSchedule = [{ date: '2026-06-19', deg: 30 }, { date: '2026-06-26', deg: 20 }];
-  assert.equal(C.recentBlockChange(st, '2026-06-28').deg, 20); // 2 days after opening
-  assert.equal(C.recentBlockChange(st, '2026-07-02'), null);   // 6 days after: window passed
-});
-test('block openings do NOT reset the trend (deliberate — see holdOn comment)', () => {
-  const st = C.defaultState();
-  st.castOffDate = '2026-06-19';
-  st.blockSchedule = [{ date: '2026-06-19', deg: 30 }, { date: '2026-06-26', deg: 20 }];
-  // sustained stiffness climb spanning the 26 Jun block row
-  for (let i = 0; i < 12; i++) st.metrics.push({ date: C.addDays('2026-06-19', i), pain: 1, stiffness: Math.min(8, 2 + i * 0.7) });
-  const reasons = [...C.holdOn(st, '2026-06-30')];
-  assert.ok(reasons.includes('stiffness trend'), 'trend spanning a block date still holds: ' + reasons);
-});
 
 // ---- journey progress ----
-test('journeyProgress: fresh state is empty; clinic ticks part-fill P0', () => {
+test('journeyProgress: fresh state is empty; a clinic tick fills the P0 fraction', () => {
   const st = C.defaultState();
   assert.deepEqual([...C.journeyProgress(st).segments], [0, 0, 0, 0, 0]);
-  st.ticks.push({ date: '2026-06-19', itemId: 'p0-clinic-brace', count: 1 });
-  assert.ok(Math.abs(C.journeyProgress(st).segments[0] - 1 / 3) < 1e-9);
+  st.ticks.push({ date: '2026-06-19', itemId: 'p0-clinic-stability', count: 1 });
+  assert.equal(C.journeyProgress(st).segments[0], 1);
 });
 test('journeyProgress: criteria fraction fills the current segment, done phases are solid', () => {
   const st = C.defaultState();
@@ -253,7 +229,7 @@ test('every exercise entry has a name and a real how-to', () => {
       assert.ok(ex.how && ex.how.length > 40, `${it.id}: "${ex.name}" how-to too thin`);
     }
   }
-  // every exercise-bearing item: all but the three one-off clinic questions
+  // every exercise-bearing item: all but the one-off clinic question
   const bare = C.PROTOCOL.items.filter(i => !i.exercises && !i.id.startsWith('p0-clinic'));
   assert.deepEqual([...bare.map(i => i.id)], []);
 });

@@ -9,7 +9,7 @@ The rehab plan itself — phases, exercises, dosing, and entry criteria — auth
 _Avoid_: plan, program
 
 **Phase**:
-One of five stages of the Protocol (0–4). Phases 1–4 unlock by ticking all Entry Criteria, never by a date; dates are guide ranges only. Phase 0 ("In Cast") is the exception: it ends on an event — cast off, brace fitted, Block Schedule entered.
+One of five stages of the Protocol (0–4). Phases 1–4 unlock by ticking all Entry Criteria, never by a date; dates are guide ranges only. Phase 0 ("In Cast") is the exception: it ends on a single event — the cast coming off (no brace followed; the clinic deemed one unnecessary).
 _Avoid_: stage, level, week-block
 
 **Entry Criterion**:
@@ -20,16 +20,16 @@ _Avoid_: gate, milestone (a Milestone is a celebration, not a gate)
 A single prescribed exercise or task in the Protocol, with a cadence (how often) and a Lifespan (when it applies). Only rehab work and gate tests are Items; general training is out of scope.
 _Avoid_: exercise (some Items aren't exercises, e.g. the red-flag check), task
 
-**Block Schedule**:
-The clinic-set table of date → allowed extension angle for the hinged brace. Entered at the Phase 0 → 1 transition, edited as an Override, and displayed prominently while the brace is worn.
-_Avoid_: brace settings, ROM limits
+**ROM Work**:
+The disciplined route to regaining range, especially extension. It has exactly two legitimate mechanisms: high-frequency **active** motion (now) and, from Phase 2, **low-load long-duration** end-range positioning (light cuff weight, multi-minute holds). Passive or forced end-range work is never part of it — it drives heterotopic ossification and is the Protocol's chief contraindication. The brace used to enforce this physically; unbraced, only ROM Work's own rules do.
+_Avoid_: stretching (implies passive force), passive ROM, mobility
 
 **Dose**:
 The current prescription for a loading Item (resistance, sets × reps, progression stage). A Dose evolves within its Item via the Progress action and is stamped onto every Tick; planned in-protocol progressions are stages of the Dose, not new Items.
 _Avoid_: load, weight, level
 
 **Hold**:
-A day-state in which Progress actions are disabled and "repeat the same load" is shown, while ticking at the current Dose remains available. Entered when the morning settle prompt is answered "no" (lasts that day) or when a pain/stiffness trend is rising (persists until the trend clears). Trend comparisons never span the cast-off boundary: post-cast soreness is expected physiology, not regression. Brace block openings deliberately do not reset the trend — the Hold banner explains the likely bump instead. After 5 consecutive Hold days the app suggests stepping back a Phase but never does it automatically. Hold means repeat, not rest.
+A day-state in which Progress actions are disabled and "repeat the same load" is shown, while ticking at the current Dose remains available. Entered when the morning settle prompt is answered "no" (lasts that day) or when a pain/stiffness trend is rising (persists until the trend clears). Trend comparisons never span the cast-off boundary: post-cast soreness is expected physiology, not regression. After 5 consecutive Hold days the app suggests stepping back a Phase but never does it automatically. Hold means repeat, not rest.
 _Avoid_: rest day, deload
 
 **Journey Bar**:
@@ -57,5 +57,5 @@ The first interaction of each day (days roll over at 4am): stiffness 0–10, pai
 _Avoid_: check-in, survey
 
 **Override**:
-A small clinic-driven edit made in the app on top of the Protocol's defaults (e.g. brace block schedule, criterion wording, phase date ranges). Structural changes are not Overrides — they go through the Protocol document.
+A small clinic-driven edit made in the app on top of the Protocol's defaults (e.g. criterion wording, phase date ranges). Structural changes are not Overrides — they go through the Protocol document.
 _Avoid_: setting, customisation
